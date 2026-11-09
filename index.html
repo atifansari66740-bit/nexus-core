@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080b12">
+  <title>NEXUS CORE | Enterprise Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="app">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+          <div class="brand-name">NEXUS CORE</div>
+          <div class="brand-sub">INTELLIGENCE PLATFORM</div>
+        </div>
+      </div>
+
+      <div class="section-label">WORKSPACE</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-page="overview" aria-current="page">
+          <span class="nav-icon">◈</span> Overview
+        </button>
+        <button data-page="analytics">
+          <span class="nav-icon">⌁</span> Analytics
+        </button>
+        <button data-page="data">
+          <span class="nav-icon">▤</span> Data Explorer
+        </button>
+        <button data-page="infrastructure">
+          <span class="nav-icon">⬡</span> Infrastructure
+        </button>
+        <button data-page="ai">
+          <span class="nav-icon">✳</span> AI Intelligence
+        </button>
+        <button data-page="logs">
+          <span class="nav-icon">≋</span> API & Event Logs
+        </button>
+      </nav>
+
+      <div class="section-label">ADMINISTRATION</div>
+      <nav class="nav" aria-label="Administration">
+        <button data-page="team">
+          <span class="nav-icon">♧</span> Teams & Access
+        </button>
+        <button data-page="settings">
+          <span class="nav-icon">⚙</span> Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="workspace">
+          <div class="workspace-label">ACTIVE WORKSPACE</div>
+          <div class="workspace-name">Northstar Labs</div>
+          <div class="workspace-status">● Workspace ready</div>
+        </div>
+      </div>
+    </aside>
+
+    <div
+  class="sidebar-overlay"
+  id="sidebarOverlay"
+  aria-hidden="true"
+></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button
+  class="icon-btn menu-toggle"
+  id="menuToggle"
+  aria-label="Open navigation"
+  aria-expanded="false"
+  aria-controls="sidebar"
+>
+  ☰
+</button>
+          <div class="breadcrumbs">
+            NEXUS CORE <span> / </span>
+            <strong id="breadcrumb">Overview</strong>
+          </div>
+        </div>
+
+        <div class="top-actions">
+          <span class="status-pill ui-badge">
+            <span class="status-dot"></span> Workspace
+          </span>
+          <button class="icon-btn" id="helpButton" aria-label="Help">?</button>
+          <div class="avatar" title="Workspace administrator">A</div>
+        </div>
+      </header>
+
+      <div class="content">
+
+        <section class="page-view active" id="page-overview">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">EXECUTIVE WORKSPACE</div>
+              <h1>Command Center</h1>
+              <div class="subtitle">
+                A unified view of platform activity,
+                operational metrics and infrastructure indicators.
+              </div>
+            </div>
+            <div class="overview-controls">
+
+  <div class="time-range-control">
+    <label for="timeRangeSelect">Time range</label>
+
+    <select id="timeRangeSelect">
+      <option value="24h">Last 24 Hours</option>
+      <option value="7d">Last 7 Days</option>
+      <option value="30d">Last 30 Days</option>
+      <option value="90d">Last 90 Days</option>
+    </select>
+  </div>
+
+  <button class="primary-btn ui-button" id="refreshButton">
+    ↻ Refresh data
+  </button>
+
+</div>
+          </div>
+
+        <section class="ui-section">
+
+          <div class="section-heading ui-section__header">
+            <h2 class="ui-section__title">Platform overview</h2>
+            <span id="updatedAt">Sample metrics</span>
+          </div>
+
+          <div class="metrics ui-section__content">
+            <article class="card kpi-card">
+              <div class="metric-label">Processed events</div>
+              <div class="metric-value" id="metricEvents">2.48M</div>
+              <div class="metric-foot">
+               <span class="positive" id="eventsTrend">↗ 12.8%</span>
+               <span class="muted">vs. prior period</span>
+              </div>
+
+              <div class="accent-line">
+               <span id="eventsProgress" style="width:78%"></span>
+              </div>
+            </article>
+
+            <article class="card kpi-card">
+              <div class="metric-label">API success rate</div>
+              <div class="metric-value" id="metricSuccess">99.94%</div>
+              <div class="metric-foot">
+               <span class="positive" id="successTrend">Within target</span>
+               <span class="muted">SLO target</span>
+              </div>
+
+              <div class="accent-line">
+                <span id="successProgress" style="width:99%"></span>
+              </div>
+            </article>
+
+            <article class="card kpi-card">
+              <div class="metric-label">Median latency</div>
+              <div class="metric-value" id="metricLatency">84 ms</div>
+              <div class="metric-foot">
+  <span class="positive" id="latencyTrend">−8.2%</span>
+  <span class="muted">vs. prior period</span>
+</div>
+
+<div class="accent-line">
+  <span id="latencyProgress" style="width:42%"></span>
+</div>
+            </article>
+
+            <article class="card kpi-card">
+              <div class="metric-label">Active workloads</div>
+              <div class="metric-value" id="metricWorkloads">148</div>
+              <div class="metric-foot">
+  <span style="color:var(--blue)" id="workloadsTrend">● 12 regions</span>
+  <span class="muted">Sample data</span>
+</div>
+
+<div class="accent-line">
+  <span id="workloadsProgress" style="width:64%;background:var(--blue)"></span>
+</div>
+            </article>
+          </div>
+        </section>
+
+          <div class="lower-grid">
+            <section class="card ui-panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>Event throughput</h3>
+                  <p>Events per interval</p>
+                </div>
+                <span class="status-pill ui-badge">Sample data</span>
+              </div>
+
+              <div class="chart-placeholder" id="chartBars"
+                role="group" aria-label="Interactive sample event throughput chart">
+                <div class="bar" style="height:40%"></div>
+                <div class="bar" style="height:55%"></div>
+                <div class="bar" style="height:48%"></div>
+                <div class="bar" style="height:68%"></div>
+                <div class="bar" style="height:61%"></div>
+                <div class="bar" style="height:79%"></div>
+                <div class="bar" style="height:65%"></div>
+                <div class="bar" style="height:88%"></div>
+                <div class="bar" style="height:72%"></div>
+                <div class="bar" style="height:94%"></div>
+                <div class="bar" style="height:80%"></div>
+                <div class="bar" style="height:100%"></div>
+                      <div class="chart-tooltip"
+                       id="chartTooltip"
+                       role="status"
+                       aria-live="polite">
+                      </div>
+              </div>
+
+              <div class="chart-caption" id="chartCaption">
+                <span>01:00</span>
+                <span>05:00</span>
+                <span>09:00</span>
+                <span>13:00</span>
+                <span>17:00</span>
+                <span>21:00</span>
+              </div>
+            </section>
+
+            <section class="card ui-panel">
+              <div class="panel-heading">
+                <div>
+                  <h3>Workload utilization</h3>
+                  <p>Resource allocation overview</p>
+                </div>
+              </div>
+
+              <div class="service-list">
+                <div class="service-row" data-service="inference">
+                  <div class="service-top">
+                    <span>Inference cluster</span><span>72%</span>
+                  </div>
+                  <div class="service-track"><span style="width:72%"></span></div>
+                </div>
+                <div class="service-row" data-service="pipelines">
+                  <div class="service-top">
+                    <span>Data pipelines</span><span>58%</span>
+                  </div>
+                  <div class="service-track"><span style="width:58%;background:var(--accent)"></span></div>
+                </div>
+                <div class="service-row" data-service="gateway">
+                  <div class="service-top">
+                    <span>API gateway</span><span>41%</span>
+                  </div>
+                  <div class="service-track"><span style="width:41%;background:var(--purple)"></span></div>
+                </div>
+                <div class="service-row" data-service="analytics">
+                  <div class="service-top">
+                    <span>Analytics engine</span><span>86%</span>
+                  </div>
+                  <div class="service-track"><span style="width:86%;background:#e7b86c"></span></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="card ui-panel activity-card ui-section">
+            <div class="panel-heading ui-section__header">
+              <div>
+                <h3 class="ui-section__title">Recent platform activity</h3>
+                <p class="ui-section__description">Recent platform events</p>
+              </div>
+              <span class="muted">Last 4 events</span>
+            </div>
+
+            <div class="activity-list ui-section__content" id="activityList">
+              <div class="activity-item">
+                <div class="activity-icon">↗</div>
+                <div class="activity-text">
+                  <strong>Pipeline batch completed</strong>
+                  <p>PIPE-EU-2048 · Analytics ingestion</p>
+                </div>
+                <span class="activity-time">2 min ago</span>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon">✳</div>
+                <div class="activity-text">
+                  <strong>Model evaluation recorded</strong>
+                  <p>MOD-ORION-17 · Model evaluation</p>
+                </div>
+                <span class="activity-time">8 min ago</span>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon">⬡</div>
+                <div class="activity-text">
+                  <strong>Regional health check completed</strong>
+                  <p>REG-APAC-06 · Sample service status</p>
+                </div>
+                <span class="activity-time">14 min ago</span>
+              </div>
+
+              <div class="activity-item">
+                <div class="activity-icon">≋</div>
+                <div class="activity-text">
+                  <strong>API event ingested</strong>
+                  <p>EVT-7K2M9 · Sample request record</p>
+                </div>
+                <span class="activity-time">21 min ago</span>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="page-view" id="page-analytics">
+          <div class="eyebrow">INTELLIGENCE</div>
+          <h1>Analytics</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>Analytics Engine</h2>
+              <p>Foundation created. Interactive charts, time ranges,
+                comparisons and detailed analytics will be built in Phase 2.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-data">
+          <div class="eyebrow">DATA MANAGEMENT</div>
+          <h1>Data Explorer</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>Enterprise Data Grid</h2>
+              <p>Unique records, multi-field search, filtering,
+                pagination and CSV export will be built in Phase 3.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-infrastructure">
+          <div class="eyebrow">OBSERVABILITY</div>
+          <h1>Infrastructure</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>Infrastructure Monitor</h2>
+              <p>Service inventory, health indicators, latency and
+                simulated incident tracking will be built in Phase 4.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-ai">
+          <div class="eyebrow">MODEL OPERATIONS</div>
+          <h1>AI Intelligence</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>AI Operations Center</h2>
+              <p>Model registry, evaluation results and inference
+                analytics will be added in a later phase.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-logs">
+          <div class="eyebrow">DEVELOPER OPERATIONS</div>
+          <h1>API & Event Logs</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>Event Intelligence</h2>
+              <p>Searchable synthetic logs, event details and request
+                diagnostics will be implemented in Phase 3 and Phase 4.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-team">
+          <div class="eyebrow">GOVERNANCE</div>
+          <h1>Teams & Access</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>Workspace Governance</h2>
+              <p>Team directories and role management will be developed
+                after the core platform is in place.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-settings">
+          <div class="eyebrow">CONFIGURATION</div>
+          <h1>Settings</h1>
+          <div class="card placeholder-panel">
+            <div>
+              <h2>Platform Settings</h2>
+              <p>Preferences, workspace configuration and integration
+                controls will be added in later phases.</p>
+            </div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <span>NEXUS CORE · Enterprise Intelligence</span>
+          <span>Workspace Platform</span>
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
