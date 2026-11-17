@@ -521,7 +521,7 @@
 
     .page-view.active {
   display: block;
-  animation: appear .18s ease-out;
+  animation: appear .12s ease-out;
 }
 
     @keyframes appear {
@@ -591,7 +591,7 @@
 
       .topbar {
         padding: 13px 16px;
-        min-height: 70px;
+        min-height: 65px;
       }
 
       .menu-toggle {
@@ -615,11 +615,11 @@
       }
 
       .top-actions {
-        gap: 7px;
+        gap: 8px;
       }
 
       .breadcrumbs {
-        font-size: 15px;
+        font-size: 14px;
       }
 
       .activity-time {
@@ -1266,8 +1266,585 @@ body.keyboard-navigation #timeRangeSelect:focus {
   background-position: right 14px center;
 }
 
-/* TEMPORARY SCROLL HEIGHT TEST */
-.app {
-  min-height: calc(100vh + 100px);
+
+/* ========================================
+   NEXUS CORE — DATA EXPLORER TABLE
+   PHASE 3 · TASK 1
+======================================== */
+
+.data-table-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.data-table-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.data-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.data-table th {
+  padding: 15px 18px;
+  background: rgba(255,255,255,.025);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  padding: 16px 18px;
+  color: var(--text);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table tbody tr {
+  transition: background-color .18s ease;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255,255,255,.025);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Mobile table handling */
+
+@media (max-width: 700px) {
+  .data-table-meta {
+    padding: 14px 15px;
+  }
+
+  .data-table {
+    min-width: 850px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 14px 15px;
+  }
+}
+
+
+/* ========================================
+   NEXUS CORE — DATA TABLE TOOLBAR
+   PHASE 3 · TASK 2
+======================================== */
+
+.data-table-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.6fr) minmax(160px, 1fr) minmax(150px, 1fr);
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-search-control,
+.data-filter-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.data-search-control label,
+.data-filter-control label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.data-search-control input,
+.data-filter-control select {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  outline: none;
+  background: var(--panel-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.data-search-control input::placeholder {
+  color: var(--muted);
+  opacity: .75;
+}
+
+.data-search-control input:focus,
+.data-filter-control select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(83, 229, 194, .10);
+}
+
+
+.data-filter-control select {
+  cursor: pointer;
+  padding: 0 42px 0 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2395A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+}
+
+
+@media (max-width: 700px) {
+  .data-table-toolbar {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px 15px;
+  }
+}
+
+
+/* ========================================
+   NEXUS CORE — DATA TABLE SORTING
+   PHASE 3 · TASK 3
+======================================== */
+
+.data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color .18s ease, background-color .18s ease;
+}
+
+.data-table th.sortable:hover {
+  color: var(--accent);
+  background: rgba(83, 229, 194, .045);
+}
+
+.sort-indicator {
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  transition: color .18s ease;
+}
+
+.data-table th.sortable:hover .sort-indicator {
+  color: var(--accent);
+}
+
+.data-table th.sortable[aria-sort="ascending"],
+.data-table th.sortable[aria-sort="descending"] {
+  color: var(--accent);
+}
+
+.data-table th.sortable[aria-sort="ascending"] .sort-indicator,
+.data-table th.sortable[aria-sort="descending"] .sort-indicator {
+  color: var(--accent);
+}
+
+
+/* ========================================
+   NEXUS CORE — DATA TABLE PAGINATION
+   PHASE 3 · TASK 4
+======================================== */
+
+.data-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.pagination-info {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.page-size-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-size-control label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+
+.page-size-control select {
+  min-height: 36px;
+  padding: 0 42px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--panel-2);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2395A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+
+.page-size-control select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(83, 229, 194, .10);
+}
+
+.pagination-controls > span {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pagination-button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pagination-button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 700px) {
+  .data-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px;
+  }
+
+  .pagination-controls {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pagination-controls {
+    gap: 8px;
+  }
+
+  .pagination-button {
+    padding: 0 9px;
+  }
+}
+
+
+/* ========================================
+   NEXUS CORE — RECORD DETAIL PANEL
+   PHASE 3 · TASK 5
+======================================== */
+
+.record-detail-dialog {
+  width: min(560px, calc(100% - 30px));
+  max-width: 560px;
+  max-height: min(85dvh, 720px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .45);
+  overflow: auto;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.record-detail-dialog::backdrop {
+  background: rgba(0, 0, 0, .72);
+  backdrop-filter: blur(4px);
+}
+
+.record-detail-dialog[open] {
+  animation: recordDetailAppear .2s ease;
+}
+
+@keyframes recordDetailAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.record-detail-panel {
+  padding: 24px;
+}
+
+.record-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.record-detail-header h2 {
+  margin: 8px 0 5px;
+  font-size: 21px;
+  font-weight: 650;
+}
+
+.record-detail-header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.record-detail-close {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .18s ease, color .18s ease;
+}
+
+.record-detail-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.record-detail-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.record-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .02);
+}
+
+.record-detail-item span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.record-detail-item strong {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1.5;
+}
+
+.record-detail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 500px) {
+  .record-detail-panel {
+    padding: 18px;
+  }
+
+  .record-detail-content {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .record-detail-dialog[open] {
+    animation: none;
+  }
+}
+
+.data-table tbody tr.data-record-row {
+  cursor: pointer;
+}
+
+.data-table tbody tr.data-record-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ========================================
+   DATA EXPLORER — CSV EXPORT BUTTON
+======================================== */
+
+.data-export-button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid rgba(83, 229, 194, 0.35);
+  border-radius: 8px;
+  background: rgba(83, 229, 194, 0.10);
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease,
+              border-color 0.2s ease;
+}
+
+.data-export-button:hover {
+  background: rgba(83, 229, 194, 0.16);
+  border-color: var(--accent);
+}
+
+.data-export-button:active {
+  background: rgba(83, 229, 194, 0.22);
+}
+
+.data-export-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ========================================
+   DATA EXPLORER — PAGINATION BUTTONS
+======================================== */
+
+.pagination-controls .pagination-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease;
+}
+
+.pagination-controls .pagination-button:not(:disabled):hover {
+  background: rgba(83, 229, 194, 0.10);
+  border-color: rgba(83, 229, 194, 0.45);
+  color: var(--accent);
+}
+
+.pagination-controls .pagination-button:not(:disabled):active {
+  background: rgba(83, 229, 194, 0.16);
+}
+
+.pagination-controls .pagination-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-controls .pagination-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ========================================
+   DATA EXPLORER — MOBILE PAGINATION LAYOUT
+======================================== */
+
+@media (max-width: 600px) {
+
+  .pagination-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-size-control {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #currentPageInfo {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  #previousPageBtn {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  #nextPageBtn {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+  }
 }
 

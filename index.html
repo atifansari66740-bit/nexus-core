@@ -328,17 +328,249 @@
           </div>
         </section>
 
-        <section class="page-view" id="page-data">
-          <div class="eyebrow">DATA MANAGEMENT</div>
-          <h1>Data Explorer</h1>
-          <div class="card placeholder-panel">
-            <div>
-              <h2>Enterprise Data Grid</h2>
-              <p>Unique records, multi-field search, filtering,
-                pagination and CSV export will be built in Phase 3.</p>
-            </div>
-          </div>
-        </section>
+        
+<section class="page-view" id="page-data">
+
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow">DATA MANAGEMENT</div>
+      <h1>Data Explorer</h1>
+      <div class="subtitle">
+        Explore, inspect and manage platform event records.
+      </div>
+    </div>
+  </div>
+
+  <section class="ui-section">
+
+    <div class="section-heading ui-section__header">
+      <div>
+        <h2 class="ui-section__title">Enterprise Data Grid</h2>
+        <p class="ui-section__description">
+          Structured platform event records
+        </p>
+      </div>
+
+      <span class="status-pill ui-badge">Sample data</span>
+    </div>
+
+    <div class="card ui-panel data-table-panel">
+
+      
+<div class="data-table-toolbar">
+
+  <div class="data-search-control">
+    <label for="dataSearchInput">Search records</label>
+    <input
+      type="search"
+      id="dataSearchInput"
+      placeholder="Search ID, event, type or source..."
+      autocomplete="off"
+    >
+  </div>
+
+  <div class="data-filter-control">
+    <label for="eventTypeFilter">Event type</label>
+    <select id="eventTypeFilter">
+      <option value="all">All event types</option>
+      <option value="Pipeline">Pipeline</option>
+      <option value="Inference">Inference</option>
+      <option value="API Request">API Request</option>
+      <option value="Health Check">Health Check</option>
+      <option value="Data Sync">Data Sync</option>
+      <option value="Evaluation">Evaluation</option>
+      <option value="Access">Access</option>
+      <option value="Analytics">Analytics</option>
+    </select>
+  </div>
+
+  <div class="data-filter-control">
+    <label for="dataStatusFilter">Status</label>
+    <select id="dataStatusFilter">
+      <option value="all">All statuses</option>
+      <option value="Success">Success</option>
+      <option value="Pending">Pending</option>
+      <option value="Failed">Failed</option>
+    </select>
+  </div>
+
+</div>
+
+
+      
+<div class="data-table-meta">
+  <span id="dataRecordCount">0 records</span>
+  <span>Event records</span>
+
+  <button
+    type="button"
+    class="ui-button data-export-button"
+    id="exportDataCSV"
+  >
+    Export CSV
+  </button>
+</div>
+
+
+      <div class="data-table-wrapper">
+
+        <table class="data-table" aria-label="Platform event records">
+
+          <thead>
+            <tr>
+              
+<th scope="col" class="sortable" data-sort="id">
+  Record ID <span class="sort-indicator">↕</span>
+</th>
+<th scope="col" class="sortable" data-sort="name">
+  Event Name <span class="sort-indicator">↕</span>
+</th>
+<th scope="col" class="sortable" data-sort="type">
+  Event Type <span class="sort-indicator">↕</span>
+</th>
+<th scope="col" class="sortable" data-sort="source">
+  Source <span class="sort-indicator">↕</span>
+</th>
+<th scope="col" class="sortable" data-sort="status">
+  Status <span class="sort-indicator">↕</span>
+</th>
+<th scope="col" class="sortable" data-sort="timestamp">
+  Timestamp <span class="sort-indicator">↕</span>
+</th>
+
+            </tr>
+          </thead>
+
+          <tbody id="dataTableBody">
+          </tbody>
+
+        </table>
+
+      </div>
+
+            
+<div class="data-pagination">
+
+  <div class="pagination-info">
+    <span id="paginationInfo">Showing 0–0 of 0 records</span>
+  </div>
+
+  <div class="pagination-controls">
+
+    <div class="page-size-control">
+      <label for="pageSizeSelect">Rows</label>
+
+      <select id="pageSizeSelect">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+      </select>
+    </div>
+
+    <button
+      type="button"
+      class="ui-button pagination-button"
+      id="previousPageBtn"
+      disabled
+    >
+      Previous
+    </button>
+
+    <span id="currentPageInfo">Page 1 of 1</span>
+
+    <button
+      type="button"
+      class="ui-button pagination-button"
+      id="nextPageBtn"
+      disabled
+    >
+      Next
+    </button>
+
+  </div>
+
+</div>
+
+
+    </div>
+
+          
+<!-- ========================================
+     PHASE 3 — RECORD DETAIL PANEL
+     TASK 5 — DRILL-DOWN ANALYSIS
+======================================== -->
+
+<dialog
+  class="record-detail-dialog"
+  id="recordDetailDialog"
+  aria-labelledby="recordDetailTitle"
+>
+  <div class="record-detail-panel">
+
+    <div class="record-detail-header">
+      <div>
+        <div class="eyebrow">RECORD INSPECTION</div>
+        <h2 id="recordDetailTitle">Event Details</h2>
+        <p>Complete event record information</p>
+      </div>
+
+      <button
+        type="button"
+        class="record-detail-close"
+        id="closeRecordDetail"
+        aria-label="Close record details"
+      >
+        &times;
+      </button>
+    </div>
+
+    <div class="record-detail-content">
+
+      <div class="record-detail-item">
+        <span>Record ID</span>
+        <strong id="detailRecordId">—</strong>
+      </div>
+
+      <div class="record-detail-item">
+        <span>Event Name</span>
+        <strong id="detailEventName">—</strong>
+      </div>
+
+      <div class="record-detail-item">
+        <span>Event Type</span>
+        <strong id="detailEventType">—</strong>
+      </div>
+
+      <div class="record-detail-item">
+        <span>Source</span>
+        <strong id="detailEventSource">—</strong>
+      </div>
+
+      <div class="record-detail-item">
+        <span>Status</span>
+        <strong id="detailEventStatus">—</strong>
+      </div>
+
+      <div class="record-detail-item">
+        <span>Timestamp</span>
+        <strong id="detailEventTimestamp">—</strong>
+      </div>
+
+    </div>
+
+    <div class="record-detail-footer">
+      <span>Event Record Inspection</span>
+      <span class="ui-badge">Read only</span>
+    </div>
+
+  </div>
+</dialog>
+
+
+  </section>
+
+</section>
+              
 
         <section class="page-view" id="page-infrastructure">
           <div class="eyebrow">OBSERVABILITY</div>

@@ -281,6 +281,7 @@ document.addEventListener("pointerdown", function() {
 
 
 const chartCaption = document.getElementById("chartCaption");
+const activityList = document.getElementById("activityList");
 const refreshButton = document.getElementById("refreshButton");
 
 
@@ -909,4 +910,609 @@ refreshButton.addEventListener("click", function() {
   }
 
 });
+
+
+// ========================================
+// PHASE 3 — DATA EXPLORER
+// TASK 1 — SAMPLE DATA GENERATOR
+// ========================================
+
+const dataTableBody = document.getElementById("dataTableBody");
+const dataRecordCount = document.getElementById("dataRecordCount");
+
+
+// ========================================
+// DATA EXPLORER CONFIGURATION
+// ========================================
+
+const dataEventTemplates = [
+  {
+    name: "Pipeline batch completed",
+    type: "Pipeline",
+    source: "Analytics Engine"
+  },
+  {
+    name: "Model inference request",
+    type: "Inference",
+    source: "AI Gateway"
+  },
+  {
+    name: "API request processed",
+    type: "API Request",
+    source: "API Gateway"
+  },
+  {
+    name: "Regional health check",
+    type: "Health Check",
+    source: "Infrastructure"
+  },
+  {
+    name: "Dataset synchronization",
+    type: "Data Sync",
+    source: "Data Explorer"
+  },
+  {
+    name: "Model evaluation completed",
+    type: "Evaluation",
+    source: "AI Intelligence"
+  },
+  {
+    name: "User access updated",
+    type: "Access",
+    source: "Workspace Admin"
+  },
+  {
+    name: "Analytics report generated",
+    type: "Analytics",
+    source: "Analytics Engine"
+  }
+];
+
+const dataRecordStatuses = [
+  "Success",
+  "Success",
+  "Success",
+  "Pending",
+  "Failed"
+];
+
+
+// ========================================
+// GENERATE UNIQUE DATA RECORDS
+// ========================================
+
+function generateDataExplorerRecords(count) {
+
+  const records = [];
+
+  for (let i = 0; i < count; i++) {
+
+    const template = dataEventTemplates[
+      Math.floor(Math.random() * dataEventTemplates.length)
+    ];
+
+    const randomId = Math.random()
+      .toString(36)
+      .substring(2, 7)
+      .toUpperCase();
+
+    const status = dataRecordStatuses[
+      Math.floor(Math.random() * dataRecordStatuses.length)
+    ];
+
+    const timestamp = new Date(
+      Date.now() - randomBetween(1, 72) * 60 * 60 * 1000
+    );
+
+    records.push({
+      id: "EVT-" + String(i + 1).padStart(4, "0") +
+          "-" + randomId,
+
+      name: template.name,
+      type: template.type,
+      source: template.source,
+      status: status,
+      timestamp: timestamp
+    });
+
+  }
+
+  return records;
+
+}
+
+
+// ========================================
+// RENDER DATA EXPLORER TABLE
+// ========================================
+
+function renderDataExplorerTable(records) {
+
+  if (!dataTableBody || !dataRecordCount) return;
+
+  dataTableBody.replaceChildren();
+
+  records.forEach(function(record) {
+
+    const row = document.createElement("tr");
+          row.classList.add("data-record-row");
+row.dataset.recordId = record.id;
+row.tabIndex = 0;
+row.setAttribute("role", "button");
+
+    const values = [
+      record.id,
+      record.name,
+      record.type,
+      record.source
+    ];
+
+    values.forEach(function(value) {
+
+      const cell = document.createElement("td");
+
+      cell.textContent = value;
+
+      row.appendChild(cell);
+
+    });
+
+
+    // Status cell
+
+    const statusCell = document.createElement("td");
+
+    const statusLabel = document.createElement("span");
+
+    statusLabel.className =
+      "data-record-status status-" +
+      record.status.toLowerCase();
+
+    statusLabel.textContent = record.status;
+
+    statusCell.appendChild(statusLabel);
+
+    row.appendChild(statusCell);
+
+
+    // Timestamp cell
+
+    const timestampCell = document.createElement("td");
+
+    timestampCell.textContent = new Intl.DateTimeFormat(
+      "en-US",
+      {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }
+    ).format(record.timestamp);
+
+    row.appendChild(timestampCell);
+
+    dataTableBody.appendChild(row);
+
+  });
+
+
+  // Update total record count
+
+  dataRecordCount.textContent =
+    records.length + (records.length === 1 ? " record" : " records");
+
+}
+
+
+// ========================================
+// INITIALIZE DATA EXPLORER
+// ========================================
+
+const dataExplorerRecords = generateDataExplorerRecords(24);
+
+renderDataExplorerTable(dataExplorerRecords);
+
+
+/* ========================================
+   PHASE 3 — SEARCH & FILTERS
+   TASK 2 — FILTER ENGINE
+======================================== */
+
+const dataSearchInput = document.getElementById("dataSearchInput");
+const eventTypeFilter = document.getElementById("eventTypeFilter");
+const dataStatusFilter = document.getElementById("dataStatusFilter");
+
+let currentDataPage = 1;
+let dataPageSize = 5;
+
+const paginationInfo = document.getElementById("paginationInfo");
+const currentPageInfo = document.getElementById("currentPageInfo");
+const pageSizeSelect = document.getElementById("pageSizeSelect");
+const previousPageBtn = document.getElementById("previousPageBtn");
+const nextPageBtn = document.getElementById("nextPageBtn");
+const exportDataCSV = document.getElementById("exportDataCSV");
+
+
+let dataSortKey = null;
+let dataSortDirection = "ascending";
+let currentFilteredDataRecords = [];
+
+
+function filterDataExplorerRecords() {
+  if (!dataSearchInput || !eventTypeFilter || !dataStatusFilter) {
+    return;
+  }
+
+  const searchTerm = dataSearchInput.value.trim().toLowerCase();
+  const selectedType = eventTypeFilter.value;
+  const selectedStatus = dataStatusFilter.value;
+
+  const filteredRecords = dataExplorerRecords.filter(function(record) {
+    
+const formattedTimestamp = new Intl.DateTimeFormat(
+  "en-US",
+  { dateStyle: "medium", timeStyle: "short" }
+).format(record.timestamp);
+
+const searchableText = [
+  record.id,
+  record.name,
+  record.type,
+  record.source,
+  record.status,
+  formattedTimestamp
+].join(" ").toLowerCase();
+
+
+    const matchesSearch = searchableText.includes(searchTerm);
+
+    const matchesType =
+      selectedType === "all" || record.type === selectedType;
+
+    const matchesStatus =
+      selectedStatus === "all" || record.status === selectedStatus;
+
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  
+if (dataSortKey) {
+  filteredRecords.sort(function(a, b) {
+    let comparison = 0;
+
+    if (dataSortKey === "timestamp") {
+      comparison = a.timestamp.getTime() - b.timestamp.getTime();
+    } else {
+      comparison = String(a[dataSortKey]).localeCompare(
+        String(b[dataSortKey]),
+        undefined,
+        { numeric: true, sensitivity: "base" }
+      );
+    }
+
+    return dataSortDirection === "ascending"
+      ? comparison
+      : -comparison;
+  });
+}
+
+currentFilteredDataRecords = filteredRecords;
+
+renderPaginatedDataExplorerTable(filteredRecords);
+
+}
+
+if (dataSearchInput && eventTypeFilter && dataStatusFilter) {
+  dataSearchInput.addEventListener("input", function() {
+  currentDataPage = 1;
+  filterDataExplorerRecords();
+});
+
+eventTypeFilter.addEventListener("change", function() {
+  currentDataPage = 1;
+  filterDataExplorerRecords();
+});
+
+dataStatusFilter.addEventListener("change", function() {
+  currentDataPage = 1;
+  filterDataExplorerRecords();
+});
+}
+
+
+/* ========================================
+   PHASE 3 — COLUMN SORTING
+   TASK 3 — SORT ENGINE
+======================================== */
+
+const sortableHeaders = document.querySelectorAll(
+  ".data-table th.sortable"
+);
+
+function updateSortIndicators() {
+  sortableHeaders.forEach(function(header) {
+    const indicator = header.querySelector(".sort-indicator");
+    const sortKey = header.dataset.sort;
+
+    if (sortKey === dataSortKey) {
+      header.setAttribute(
+        "aria-sort",
+        dataSortDirection === "ascending"
+          ? "ascending"
+          : "descending"
+      );
+
+      indicator.textContent =
+        dataSortDirection === "ascending" ? "↑" : "↓";
+    } else {
+      header.setAttribute("aria-sort", "none");
+      indicator.textContent = "↕";
+    }
+  });
+}
+
+sortableHeaders.forEach(function(header) {
+  header.addEventListener("click", function() {
+    const selectedKey = header.dataset.sort;
+
+    if (dataSortKey === selectedKey) {
+      dataSortDirection =
+        dataSortDirection === "ascending"
+          ? "descending"
+          : "ascending";
+    } else {
+      dataSortKey = selectedKey;
+      dataSortDirection = "ascending";
+    }
+
+    updateSortIndicators();
+    filterDataExplorerRecords();
+  });
+});
+
+updateSortIndicators();
+
+
+/* ========================================
+   NEXUS CORE — PAGINATION ENGINE
+   PHASE 3 · TASK 4
+======================================== */
+
+function renderPaginatedDataExplorerTable(records) {
+  if (
+    !paginationInfo ||
+    !currentPageInfo ||
+    !pageSizeSelect ||
+    !previousPageBtn ||
+    !nextPageBtn
+  ) {
+    return;
+  }
+
+  const totalRecords = records.length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / dataPageSize)
+  );
+
+  currentDataPage = Math.min(currentDataPage, totalPages);
+
+  const startIndex = (currentDataPage - 1) * dataPageSize;
+  const endIndex = Math.min(
+    startIndex + dataPageSize,
+    totalRecords
+  );
+
+  const pageRecords = records.slice(startIndex, endIndex);
+
+  renderDataExplorerTable(pageRecords);
+
+  if (dataRecordCount) {
+    dataRecordCount.textContent =
+      totalRecords + (totalRecords === 1 ? " record" : " records");
+  }
+
+  paginationInfo.textContent = totalRecords === 0
+    ? "Showing 0–0 of 0 records"
+    : "Showing " + (startIndex + 1) + "–" +
+      endIndex + " of " + totalRecords + " records";
+
+  currentPageInfo.textContent =
+    "Page " + currentDataPage + " of " + totalPages;
+
+  previousPageBtn.disabled = currentDataPage === 1;
+  nextPageBtn.disabled = currentDataPage === totalPages;
+}
+
+if (
+  pageSizeSelect &&
+  previousPageBtn &&
+  nextPageBtn
+) {
+  pageSizeSelect.addEventListener("change", function() {
+    dataPageSize = Number(pageSizeSelect.value);
+    currentDataPage = 1;
+    filterDataExplorerRecords();
+  });
+
+  previousPageBtn.addEventListener("click", function() {
+    if (currentDataPage > 1) {
+      currentDataPage--;
+      filterDataExplorerRecords();
+    }
+  });
+
+  nextPageBtn.addEventListener("click", function() {
+    currentDataPage++;
+    filterDataExplorerRecords();
+  });
+}
+
+filterDataExplorerRecords();
+
+
+/* ========================================
+   NEXUS CORE — RECORD DRILL-DOWN
+   PHASE 3 · TASK 5
+======================================== */
+
+const recordDetailDialog = document.getElementById("recordDetailDialog");
+const closeRecordDetail = document.getElementById("closeRecordDetail");
+
+const detailRecordId = document.getElementById("detailRecordId");
+const detailEventName = document.getElementById("detailEventName");
+const detailEventType = document.getElementById("detailEventType");
+const detailEventSource = document.getElementById("detailEventSource");
+const detailEventStatus = document.getElementById("detailEventStatus");
+const detailEventTimestamp = document.getElementById("detailEventTimestamp");
+
+function openRecordDetails(record) {
+  if (!record || !recordDetailDialog) return;
+
+  detailRecordId.textContent = record.id;
+  detailEventName.textContent = record.name;
+  detailEventType.textContent = record.type;
+  detailEventSource.textContent = record.source;
+  detailEventStatus.textContent = record.status;
+
+  detailEventTimestamp.textContent = new Intl.DateTimeFormat(
+    "en-US",
+    { dateStyle: "medium", timeStyle: "short" }
+  ).format(record.timestamp);
+
+  recordDetailDialog.showModal();
+}
+
+function handleRecordSelection(event) {
+  const row = event.target.closest("tr[data-record-id]");
+
+  if (!row || !dataTableBody.contains(row)) return;
+
+  const selectedRecord = dataExplorerRecords.find(function(record) {
+    return record.id === row.dataset.recordId;
+  });
+
+  openRecordDetails(selectedRecord);
+}
+
+if (dataTableBody) {
+  dataTableBody.addEventListener("click", handleRecordSelection);
+
+  dataTableBody.addEventListener("keydown", function(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      const row = event.target.closest("tr[data-record-id]");
+
+      if (!row) return;
+
+      event.preventDefault();
+      handleRecordSelection(event);
+    }
+  });
+}
+
+if (closeRecordDetail && recordDetailDialog) {
+  closeRecordDetail.addEventListener("click", function() {
+    recordDetailDialog.close();
+  });
+
+  recordDetailDialog.addEventListener("click", function(event) {
+    if (event.target === recordDetailDialog) {
+      recordDetailDialog.close();
+    }
+  });
+}
+
+
+// ========================================
+// NEXUS CORE — CSV EXPORT ENGINE
+// ========================================
+
+function escapeCSVValue(value) {
+  const text = String(value ?? "");
+
+  return '"' + text.replace(/"/g, '""') + '"';
+}
+
+
+function downloadDataExplorerCSV() {
+
+  if (!currentFilteredDataRecords.length) {
+    return;
+  }
+
+  const csvHeaders = [
+    "Record ID",
+    "Event Name",
+    "Event Type",
+    "Source",
+    "Status",
+    "Timestamp"
+  ];
+
+  const dateFormatter = new Intl.DateTimeFormat(
+    "en-US",
+    {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }
+  );
+
+  const csvRows = currentFilteredDataRecords.map(function(record) {
+
+    const formattedTimestamp = dateFormatter.format(
+      record.timestamp
+    );
+
+    return [
+      record.id,
+      record.name,
+      record.type,
+      record.source,
+      record.status,
+      formattedTimestamp
+    ].map(escapeCSVValue).join(",");
+
+  });
+
+  const csvContent = [
+    csvHeaders.map(escapeCSVValue).join(","),
+    ...csvRows
+  ].join("\r\n");
+
+  const csvBlob = new Blob(
+  [csvContent],
+  {
+    type: "text/csv;charset=utf-8;"
+  }
+);
+
+  const downloadURL = URL.createObjectURL(csvBlob);
+
+  const downloadLink = document.createElement("a");
+
+  downloadLink.href = downloadURL;
+
+  downloadLink.download =
+    "nexus-core-data-export-" +
+    new Date().toISOString().slice(0, 10) +
+    ".csv";
+
+  document.body.appendChild(downloadLink);
+
+  downloadLink.click();
+
+  downloadLink.remove();
+
+  setTimeout(function() {
+    URL.revokeObjectURL(downloadURL);
+  }, 1000);
+}
+
+// ========================================
+// CSV EXPORT — BUTTON EVENT
+// ========================================
+
+if (exportDataCSV) {
+  exportDataCSV.addEventListener("click", function() {
+    downloadDataExplorerCSV();
+  });
+}
 
