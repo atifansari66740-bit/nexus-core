@@ -1516,3 +1516,267 @@ if (exportDataCSV) {
   });
 }
 
+
+/* ========================================
+   PHASE 3 — ANALYTICS & INSIGHTS
+   TASK 1 — ANALYTICS KPI GENERATOR
+======================================== */
+
+function generateAnalyticsMetrics() {
+
+  // Generate sample analytics values
+
+  const totalEvents = Math.floor(
+    randomBetween(2400000, 2600000)
+  );
+
+  const successRate = randomBetween(
+    99.90,
+    99.99
+  );
+
+  const averageLatency = Math.floor(
+    randomBetween(70, 110)
+  );
+
+  const failedEvents = Math.round(
+    totalEvents * (1 - successRate / 100)
+  );
+
+
+  // Update Analytics KPI cards
+
+  const totalEventsElement = document.getElementById(
+    "analyticsTotalEvents"
+  );
+
+  const successRateElement = document.getElementById(
+    "analyticsSuccessRate"
+  );
+
+  const averageLatencyElement = document.getElementById(
+    "analyticsAverageLatency"
+  );
+
+  const failedEventsElement = document.getElementById(
+    "analyticsFailedEvents"
+  );
+
+
+  if (totalEventsElement) {
+    totalEventsElement.textContent =
+      (totalEvents / 1000000).toFixed(2) + "M";
+  }
+
+  if (successRateElement) {
+    successRateElement.textContent =
+      successRate.toFixed(2) + "%";
+  }
+
+  if (averageLatencyElement) {
+    averageLatencyElement.textContent =
+      averageLatency + " ms";
+  }
+
+  if (failedEventsElement) {
+    failedEventsElement.textContent =
+      failedEvents.toLocaleString("en-US");
+  }
+
+}
+
+
+// Initialize Analytics Overview
+
+generateAnalyticsMetrics();
+
+
+/* ========================================
+   PHASE 3 — ANALYTICS & INSIGHTS
+   TASK 1 — KPI TREND INDICATORS
+======================================== */
+
+function generateAnalyticsTrends() {
+
+  const analyticsPage = document.getElementById(
+    "page-analytics"
+  );
+
+  if (!analyticsPage) return;
+
+  const trendElements = analyticsPage.querySelectorAll(
+    ".metric-foot .muted"
+  );
+
+  if (trendElements.length !== 4) {
+    console.warn("Analytics KPI trend elements not found.");
+    return;
+  }
+
+  // Generate sample trend percentages
+
+  const totalEventsTrend = randomBetween(2.1, 5.8);
+  const successRateTrend = randomBetween(0.02, 0.12);
+  const latencyTrend = randomBetween(1.5, 6.5);
+  const failedEventsTrend = randomBetween(2.0, 8.0);
+
+  // Update KPI trend information
+
+  trendElements[0].textContent =
+    "↑ " + totalEventsTrend.toFixed(2) +
+    "% vs previous period";
+
+  trendElements[1].textContent =
+    "↑ " + successRateTrend.toFixed(2) +
+    " percentage points vs previous period";
+
+  trendElements[2].textContent =
+    "↓ " + latencyTrend.toFixed(2) +
+    "% vs previous period";
+
+  trendElements[3].textContent =
+    "↓ " + failedEventsTrend.toFixed(2) +
+    "% vs previous period";
+
+}
+
+// Initialize Analytics KPI Trends
+
+generateAnalyticsTrends();
+
+
+/* ========================================
+   PHASE 3 — ANALYTICS & INSIGHTS
+   TASK 1 — KPI PROGRESS CALCULATIONS
+======================================== */
+
+function updateAnalyticsProgressBars() {
+
+  // Read current Analytics KPI values
+
+  const totalEventsElement = document.getElementById(
+    "analyticsTotalEvents"
+  );
+
+  const successRateElement = document.getElementById(
+    "analyticsSuccessRate"
+  );
+
+  const latencyElement = document.getElementById(
+    "analyticsAverageLatency"
+  );
+
+  const failedEventsElement = document.getElementById(
+    "analyticsFailedEvents"
+  );
+
+  if (
+    !totalEventsElement ||
+    !successRateElement ||
+    !latencyElement ||
+    !failedEventsElement
+  ) {
+    return;
+  }
+
+  // Convert displayed values into numbers
+
+  const totalEvents =
+    parseFloat(totalEventsElement.textContent) * 1000000;
+
+  const successRate =
+    parseFloat(successRateElement.textContent);
+
+  const averageLatency =
+    parseFloat(latencyElement.textContent);
+
+  const failedEvents =
+    Number(
+      failedEventsElement.textContent.replace(/,/g, "")
+    );
+
+  if (
+    !Number.isFinite(totalEvents) ||
+    !Number.isFinite(successRate) ||
+    !Number.isFinite(averageLatency) ||
+    !Number.isFinite(failedEvents) ||
+    totalEvents <= 0 ||
+    averageLatency < 0 ||
+    failedEvents < 0
+  ) {
+    console.warn("Invalid Analytics KPI values.");
+    return;
+  }
+
+  // Calculate progress percentages
+
+  const totalEventsProgress =
+    (totalEvents / 3000000) * 100;
+
+  const successRateProgress =
+    successRate;
+
+  const latencyProgress =
+    ((200 - averageLatency) / 200) * 100;
+
+  const failureRate =
+    (failedEvents / totalEvents) * 100;
+
+  const failedEventsProgress =
+    100 - (failureRate / 0.2) * 100;
+
+
+  // Keep all progress values between 0 and 100
+
+  const progressValues = [
+    totalEventsProgress,
+    successRateProgress,
+    latencyProgress,
+    failedEventsProgress
+  ].map(value =>
+    Math.max(0, Math.min(100, value))
+  );
+
+
+  // Progress bar element IDs
+
+  const progressIds = [
+    "analyticsTotalEvents",
+    "analyticsSuccessRate",
+    "analyticsAverageLatency",
+    "analyticsFailedEvents"
+  ];
+
+
+  // Update progress bars and accessibility values
+
+  progressIds.forEach((id, index) => {
+
+    const progressElement = document.getElementById(
+      id + "Progress"
+    );
+
+    const fillElement = document.getElementById(
+      id + "ProgressFill"
+    );
+
+    if (!progressElement || !fillElement) return;
+
+    const progress = progressValues[index];
+
+    progressElement.setAttribute(
+      "aria-valuenow",
+      progress.toFixed(2)
+    );
+
+    fillElement.style.width = progress + "%";
+
+  });
+
+}
+
+
+// Initialize Analytics Progress Bars
+
+updateAnalyticsProgressBars();
+
