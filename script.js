@@ -543,6 +543,56 @@ function generateActivityData() {
 
 
 
+/* ========================================
+   PHASE 3 — COMPARATIVE ANALYTICS
+   OVERVIEW SHARED STATE
+======================================== */
+
+const overviewMetricState = {
+  totalEvents: 0,
+  successRate: 0,
+  averageLatency: 0,
+  workloads: 0
+};
+
+
+// Store Overview metrics separately for each time range
+
+// Initialize metrics for all time ranges
+const overviewRangeMetrics = {};
+
+Object.keys(overviewData).forEach(function(rangeKey) {
+
+  const range = overviewData[rangeKey];
+
+  const events = randomBetween(
+    range.events[0],
+    range.events[1]
+  );
+
+  const success = randomBetween(
+    range.success[0],
+    range.success[1]
+  );
+
+  const latency = Math.floor(
+    randomBetween(range.latency[0], range.latency[1])
+  );
+
+  const workloads = Math.floor(
+    randomBetween(range.workloads[0], range.workloads[1])
+  );
+
+  overviewRangeMetrics[rangeKey] = {
+    totalEvents: Number(events.toFixed(2)) * 1000000,
+    successRate: Number(success.toFixed(2)),
+    averageLatency: latency,
+    workloads: workloads
+  };
+
+});
+
+
 // ========================================
 // UPDATE OVERVIEW DATA
 // ========================================
@@ -575,6 +625,31 @@ function updateOverviewData() {
   const workloads = Math.floor(
     randomBetween(range.workloads[0], range.workloads[1])
   );
+
+        
+  // Store current Overview metrics in shared state
+
+  overviewMetricState.totalEvents =
+    Number(events) * 1000000;
+
+  overviewMetricState.successRate =
+    Number(success);
+
+  overviewMetricState.averageLatency =
+    latency;
+
+  overviewMetricState.workloads =
+    workloads;
+
+
+// Save metrics for the selected time range
+overviewRangeMetrics[selectedRange] = {
+  totalEvents: overviewMetricState.totalEvents,
+  successRate: overviewMetricState.successRate,
+  averageLatency: overviewMetricState.averageLatency,
+  workloads: overviewMetricState.workloads
+};
+
 
 
   // Update reusable KPI components
@@ -738,6 +813,165 @@ chartCaption.innerHTML = chartRangeLabels[
 
 
 
+
+/* ========================================
+   PHASE 3 — TASK 5
+   COMPARATIVE ANALYTICS
+======================================== */
+
+function updateComparativeAnalytics() {
+
+  const rangeSelect =
+    document.getElementById("analyticsComparisonRange");
+
+  const eventsElement =
+    document.getElementById("analyticsComparisonEvents");
+
+  const successElement =
+    document.getElementById("analyticsComparisonSuccess");
+
+  const latencyElement =
+    document.getElementById("analyticsComparisonLatency");
+
+  const eventsDetail =
+    document.getElementById("analyticsComparisonEventsDetail");
+
+  const successDetail =
+    document.getElementById("analyticsComparisonSuccessDetail");
+
+  const latencyDetail =
+    document.getElementById("analyticsComparisonLatencyDetail");
+
+  if (
+    !rangeSelect ||
+    !eventsElement ||
+    !successElement ||
+    !latencyElement ||
+    !eventsDetail ||
+    !successDetail ||
+    !latencyDetail
+  ) {
+    console.warn("Comparative Analytics elements not found.");
+    return;
+  }
+
+  const selectedRange = rangeSelect.value;
+  const range = overviewData[selectedRange];
+
+  if (!range) {
+    console.warn("Invalid Comparative Analytics range.");
+    return;
+  }
+
+  const rangeLabels = {
+    "24h": "24-hour",
+    "7d": "7-day",
+    "30d": "30-day",
+    "90d": "90-day"
+  };
+
+  
+  // Read metrics for the selected comparison range
+const comparisonMetrics = overviewRangeMetrics[selectedRange];
+
+if (!comparisonMetrics) {
+  console.warn(
+    "No saved metrics available for this comparison range."
+  );
+  return;
+}
+
+const currentEvents = comparisonMetrics.totalEvents;
+const currentSuccess = comparisonMetrics.successRate;
+const currentLatency = comparisonMetrics.averageLatency;
+
+  // Validate current Overview metrics
+
+  if (
+    !Number.isFinite(currentEvents) ||
+    currentEvents <= 0 ||
+    !Number.isFinite(currentSuccess) ||
+    currentSuccess <= 0 ||
+    !Number.isFinite(currentLatency) ||
+    currentLatency <= 0
+  ) {
+    console.warn(
+      "Overview Shared State is not ready for comparison."
+    );
+    return;
+  }
+
+
+  // Generate previous-period sample baseline
+
+  const targetEventsChange =
+    randomBetween(-5, 8);
+
+  const previousEvents =
+    currentEvents / (1 + targetEventsChange / 100);
+
+  const targetSuccessChange =
+    randomBetween(-0.04, 0.04);
+
+  const previousSuccess =
+    currentSuccess - targetSuccessChange;
+
+  const targetLatencyChange =
+    randomBetween(-8, 8);
+
+  const previousLatency =
+    currentLatency / (1 + targetLatencyChange / 100);
+
+  // Calculate actual comparison changes
+
+  const eventsChange =
+    ((currentEvents - previousEvents) / previousEvents) * 100;
+
+  const successChange =
+    currentSuccess - previousSuccess;
+
+  const latencyChange =
+    ((currentLatency - previousLatency) / previousLatency) * 100;
+
+  // Format comparison values
+
+  function formatChange(value, decimals, suffix) {
+
+    const sign = value > 0 ? "+" : "";
+
+    return sign + value.toFixed(decimals) + suffix;
+
+  }
+
+  // Update comparison KPI values
+
+  eventsElement.textContent =
+    formatChange(eventsChange, 2, "%");
+
+  successElement.textContent =
+    formatChange(successChange, 3, " pp");
+
+  latencyElement.textContent =
+    formatChange(latencyChange, 2, "%");
+
+  // Update comparison descriptions
+
+  const periodLabel = rangeLabels[selectedRange];
+
+  eventsDetail.textContent =
+    "vs previous " + periodLabel + " period";
+
+  successDetail.textContent =
+    "vs previous " + periodLabel + " period";
+
+  latencyDetail.textContent =
+    "vs previous " + periodLabel + " period";
+
+}
+
+
+
+
 // ========================================
 // PHASE 2 — INTERACTIVE CHART TOOLTIP
 // ========================================
@@ -860,6 +1094,12 @@ document.addEventListener("click", function(event) {
 });
 
 
+// Initialize Overview and Comparative Analytics
+
+updateOverviewData();
+
+updateComparativeAnalytics();
+
 
 // ========================================
 // TIME RANGE SELECTOR
@@ -868,6 +1108,8 @@ document.addEventListener("click", function(event) {
 timeRangeSelect.addEventListener("change", function() {
 
   updateOverviewData();
+
+  updateComparativeAnalytics();
 
 });
 
@@ -894,6 +1136,8 @@ refreshButton.addEventListener("click", function() {
     // Refresh data for the currently selected range
 
     updateOverviewData();
+
+    updateComparativeAnalytics();
 
   } finally {
 
@@ -1107,6 +1351,89 @@ row.setAttribute("role", "button");
 // ========================================
 
 const dataExplorerRecords = generateDataExplorerRecords(24);
+
+/* ========================================
+   PHASE 3 — TASK 4
+   EVENT DISTRIBUTION
+======================================== */
+
+function updateAnalyticsEventDistribution() {
+
+  const typeElement =
+    document.getElementById("analyticsEventsByType");
+
+  const sourceElement =
+    document.getElementById("analyticsEventsBySource");
+
+  if (!typeElement || !sourceElement) {
+    console.warn("Event Distribution elements not found.");
+    return;
+  }
+
+  if (
+    !Array.isArray(dataExplorerRecords) ||
+    dataExplorerRecords.length === 0
+  ) {
+    console.warn("Data Explorer records are unavailable.");
+    return;
+  }
+
+  function generateDistribution(records, field) {
+
+    const counts = {};
+
+    records.forEach(record => {
+      const value = record[field];
+
+      if (value) {
+        counts[value] = (counts[value] || 0) + 1;
+      }
+    });
+
+    const entries = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1]);
+
+    const total = entries.reduce(
+      (sum, entry) => sum + entry[1],
+      0
+    );
+
+    return entries.map(([label, count]) => {
+
+      const percentage = (count / total) * 100;
+
+      return `
+        <div class="analytics-distribution__item">
+
+          <div class="analytics-distribution__heading">
+            <span>${label}</span>
+            <span>
+              ${count.toLocaleString("en-US")}
+              (${percentage.toFixed(1)}%)
+            </span>
+          </div>
+
+          <div class="analytics-distribution__track">
+            <div
+              class="analytics-distribution__fill"
+              style="--distribution-width: ${percentage.toFixed(2)}%"
+            ></div>
+          </div>
+
+        </div>
+      `;
+    }).join("");
+  }
+
+  typeElement.innerHTML =
+    generateDistribution(dataExplorerRecords, "type");
+
+  sourceElement.innerHTML =
+    generateDistribution(dataExplorerRecords, "source");
+}
+
+updateAnalyticsEventDistribution();
+
 
 renderDataExplorerTable(dataExplorerRecords);
 
@@ -1518,6 +1845,18 @@ if (exportDataCSV) {
 
 
 /* ========================================
+   PHASE 3 — SHARED ANALYTICS DATA
+======================================== */
+
+const analyticsMetricState = {
+  totalEvents: 0,
+  successRate: 0,
+  averageLatency: 0,
+  failedEvents: 0
+};
+
+
+/* ========================================
    PHASE 3 — ANALYTICS & INSIGHTS
    TASK 1 — ANALYTICS KPI GENERATOR
 ======================================== */
@@ -1542,6 +1881,17 @@ function generateAnalyticsMetrics() {
   const failedEvents = Math.round(
     totalEvents * (1 - successRate / 100)
   );
+
+
+        // Store exact Analytics values in shared state
+
+analyticsMetricState.totalEvents = totalEvents;
+
+analyticsMetricState.successRate = successRate;
+
+analyticsMetricState.averageLatency = averageLatency;
+
+analyticsMetricState.failedEvents = failedEvents;
 
 
   // Update Analytics KPI cards
@@ -1589,6 +1939,65 @@ function generateAnalyticsMetrics() {
 // Initialize Analytics Overview
 
 generateAnalyticsMetrics();
+
+
+
+/* ========================================
+   PHASE 3 — TASK 3
+   PERFORMANCE ANALYTICS
+======================================== */
+
+function updateAnalyticsPerformance() {
+
+  const successRateElement =
+    document.getElementById("analyticsPerformanceSuccessRate");
+
+  const failureRateElement =
+    document.getElementById("analyticsPerformanceFailureRate");
+
+  const latencyElement =
+    document.getElementById("analyticsPerformanceLatency");
+
+  if (
+    !successRateElement ||
+    !failureRateElement ||
+    !latencyElement
+  ) {
+    console.warn("Performance Analytics elements not found.");
+    return;
+  }
+
+  const totalEvents = analyticsMetricState.totalEvents;
+  const successRate = analyticsMetricState.successRate;
+  const failedEvents = analyticsMetricState.failedEvents;
+  const averageLatency = analyticsMetricState.averageLatency;
+
+  if (
+    !Number.isFinite(totalEvents) ||
+    totalEvents <= 0 ||
+    !Number.isFinite(successRate) ||
+    !Number.isFinite(failedEvents) ||
+    !Number.isFinite(averageLatency)
+  ) {
+    console.warn("Invalid Performance Analytics shared data.");
+    return;
+  }
+
+  const failureRate =
+    (failedEvents / totalEvents) * 100;
+
+  successRateElement.textContent =
+    successRate.toFixed(2) + "%";
+
+  failureRateElement.textContent =
+    failureRate.toFixed(4) + "%";
+
+  latencyElement.textContent =
+    averageLatency + " ms";
+}
+
+updateAnalyticsPerformance();
+
 
 
 /* ========================================
@@ -1679,21 +2088,17 @@ function updateAnalyticsProgressBars() {
     return;
   }
 
-  // Convert displayed values into numbers
+  
+  // Read exact values from shared Analytics state
 
-  const totalEvents =
-    parseFloat(totalEventsElement.textContent) * 1000000;
+  const totalEvents = analyticsMetricState.totalEvents;
 
-  const successRate =
-    parseFloat(successRateElement.textContent);
+  const successRate = analyticsMetricState.successRate;
 
-  const averageLatency =
-    parseFloat(latencyElement.textContent);
+  const averageLatency = analyticsMetricState.averageLatency;
 
-  const failedEvents =
-    Number(
-      failedEventsElement.textContent.replace(/,/g, "")
-    );
+  const failedEvents = analyticsMetricState.failedEvents;
+
 
   if (
     !Number.isFinite(totalEvents) ||
@@ -1779,4 +2184,132 @@ function updateAnalyticsProgressBars() {
 // Initialize Analytics Progress Bars
 
 updateAnalyticsProgressBars();
+
+
+/* ========================================
+   PHASE 3 — ANALYTICS & INSIGHTS
+   TASK 2 — EVENTS OVER TIME
+   STEP 2 — CHART DATA GENERATOR
+======================================== */
+
+function generateAnalyticsEventsTrend() {
+
+  const chartElement = document.getElementById(
+  "analyticsEventsTrendChart"
+);
+
+if (!chartElement) {
+  console.warn("Analytics Events Trend element not found.");
+  return;
+}
+
+// Read exact Total Events from shared state
+
+const totalEvents = analyticsMetricState.totalEvents;
+
+if (!Number.isFinite(totalEvents) || totalEvents <= 0) {
+  console.warn("Invalid Analytics shared Total Events value.");
+  return;
+}
+
+  // Twelve two-hour intervals covering 24 hours
+
+  const intervals = [
+    "00:00", "02:00", "04:00", "06:00",
+    "08:00", "10:00", "12:00", "14:00",
+    "16:00", "18:00", "20:00", "22:00"
+  ];
+
+  // Distribution weights: total = 2440
+
+  const weights = [
+    168, 182, 195, 176,
+    205, 214, 198, 226,
+    235, 218, 207, 216
+  ];
+
+  const weightTotal = weights.reduce(
+    (sum, value) => sum + value,
+    0
+  );
+
+  // Generate event counts for each interval
+
+  let allocatedEvents = 0;
+
+  const trendData = weights.map((weight, index) => {
+
+    let events;
+
+    if (index === weights.length - 1) {
+      events = totalEvents - allocatedEvents;
+    } else {
+      events = Math.round(
+        totalEvents * (weight / weightTotal)
+      );
+
+      allocatedEvents += events;
+    }
+
+    return {
+      label: intervals[index],
+      events: events
+    };
+
+  });
+
+  // Find the maximum value for chart scaling
+
+  const maximumEvents = Math.max(
+    ...trendData.map(item => item.events)
+  );
+
+  // Render chart columns
+
+  const chartMarkup = trendData.map(item => {
+
+    const barHeight = (
+      item.events / maximumEvents
+    ) * 100;
+
+    return `
+      <div
+        class="analytics-trend-chart__column"
+        data-event-count="${item.events}"
+        aria-label="${item.label}: ${item.events.toLocaleString("en-US")} events"
+      >
+        <span class="analytics-trend-chart__value">
+          ${item.events.toLocaleString("en-US")}
+        </span>
+
+        <div class="analytics-trend-chart__bar-track">
+          <div
+            class="analytics-trend-chart__bar-fill"
+            style="--bar-height: ${barHeight.toFixed(2)}%"
+          ></div>
+        </div>
+
+        <span class="analytics-trend-chart__label">
+          ${item.label}
+        </span>
+      </div>
+    `;
+
+  }).join("");
+
+  chartElement.innerHTML = `
+    <div
+      class="analytics-trend-chart__plot"
+      data-total-events="${totalEvents}"
+    >
+      ${chartMarkup}
+    </div>
+  `;
+
+}
+
+
+// Initialize Events Over Time Chart
+
+generateAnalyticsEventsTrend();
 

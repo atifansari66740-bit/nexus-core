@@ -1886,3 +1886,334 @@ body.keyboard-navigation #timeRangeSelect:focus {
   }
 }
 
+
+/* ========================================
+   PHASE 3 — ANALYTICS & INSIGHTS
+   TASK 2 — EVENTS OVER TIME CHART
+   STEP 3 — CHART STYLING
+======================================== */
+
+/* Chart horizontal scrolling container */
+
+#analyticsEventsTrendChart {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Chart plot — 12 columns */
+
+.analytics-trend-chart__plot {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(42px, 1fr));
+  align-items: end;
+  gap: 10px;
+
+  width: 100%;
+  min-width: 680px;
+  min-height: 240px;
+
+  padding: 18px 8px 12px;
+  box-sizing: border-box;
+}
+
+/* Individual chart column */
+
+.analytics-trend-chart__column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  min-width: 0;
+  height: 100%;
+}
+
+/* Event count above each bar */
+
+.analytics-trend-chart__value {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Vertical bar background */
+
+.analytics-trend-chart__bar-track {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  width: 100%;
+  max-width: 30px;
+  height: 150px;
+
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+/* Actual event bar */
+
+.analytics-trend-chart__bar-fill {
+  display: block;
+  width: 100%;
+  height: var(--bar-height, 0%);
+
+  background: linear-gradient(
+    180deg,
+    var(--color-accent),
+    var(--color-blue)
+  );
+
+  border-radius: 6px 6px 0 0;
+
+  transition: height 420ms ease;
+}
+
+/* Time interval labels */
+
+.analytics-trend-chart__label {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hover feedback */
+
+.analytics-trend-chart__column:hover
+.analytics-trend-chart__bar-fill {
+  filter: brightness(1.15);
+}
+
+/* Accessibility — Reduced Motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .analytics-trend-chart__bar-fill {
+    transition: none;
+  }
+}
+
+
+/* ========================================
+   PHASE 3 — TASK 3
+   PERFORMANCE ANALYTICS
+======================================== */
+
+#page-analytics
+#analyticsPerformanceTitle {
+  color: var(--text-primary, #f1f5f9);
+}
+
+#page-analytics
+#analyticsPerformanceTitle
++ .ui-section__description {
+  color: var(--text-muted, #94a3b8);
+}
+
+#page-analytics
+#analyticsPerformanceTitle {
+  letter-spacing: -0.3px;
+}
+
+#page-analytics
+#analyticsPerformanceSuccessRate,
+#page-analytics
+#analyticsPerformanceFailureRate,
+#page-analytics
+#analyticsPerformanceLatency {
+  font-variant-numeric: tabular-nums;
+  transition: color 220ms ease;
+}
+
+@media (max-width: 600px) {
+  #page-analytics
+  .ui-section[aria-labelledby="analyticsPerformanceTitle"]
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-analytics
+  #analyticsPerformanceSuccessRate,
+  #page-analytics
+  #analyticsPerformanceFailureRate,
+  #page-analytics
+  #analyticsPerformanceLatency {
+    transition: none;
+  }
+}
+
+
+/* ========================================
+   PHASE 3 — TASK 4
+   EVENT DISTRIBUTION
+======================================== */
+
+#page-analytics
+.ui-section[aria-labelledby="analyticsDistributionTitle"]
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4, 16px);
+  min-width: 0;
+}
+
+#page-analytics
+#analyticsEventsByType,
+#page-analytics
+#analyticsEventsBySource {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  #page-analytics
+  .ui-section[aria-labelledby="analyticsDistributionTitle"]
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ========================================
+   PHASE 3 — TASK 4
+   EVENT DISTRIBUTION BARS
+======================================== */
+
+#page-analytics .analytics-distribution__item {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 18px;
+  min-width: 0;
+}
+
+#page-analytics .analytics-distribution__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  color: var(--text-primary, #f1f5f9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+#page-analytics .analytics-distribution__track {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: var(--surface-raised, #151e2a);
+  border: 1px solid var(--border-default, #273142);
+  border-radius: 999px;
+}
+
+#page-analytics .analytics-distribution__fill {
+  display: block;
+  width: var(--distribution-width, 0%);
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent, #53e5c2),
+    var(--blue, #7c9cff)
+  );
+  border-radius: inherit;
+  transition: width 420ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-analytics .analytics-distribution__fill {
+    transition: none;
+  }
+}
+
+
+/* ========================================
+   PHASE 3 — TASK 5
+   COMPARATIVE ANALYTICS
+======================================== */
+
+#page-analytics
+.ui-section[aria-labelledby="analyticsComparisonTitle"]
+.ui-section__content > .card:first-child {
+  margin-bottom: 16px;
+}
+
+
+#page-analytics
+#analyticsComparisonRange {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  min-width: 0;
+  min-height: 44px;
+  margin-top: 12px;
+
+  padding: 10px 42px 10px 14px;
+
+  color: #f1f5f9;
+  background-color: #151e2a;
+
+  border: 1px solid #273142;
+  border-radius: 10px;
+  outline: none;
+
+  font: inherit;
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f1f5f9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+#page-analytics
+#analyticsComparisonRange:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(83, 229, 194, .10);
+}
+
+
+#page-analytics
+#analyticsComparisonEvents,
+#page-analytics
+#analyticsComparisonSuccess,
+#page-analytics
+#analyticsComparisonLatency {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  #page-analytics
+  #analyticsComparisonRange {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-analytics
+  #analyticsComparisonRange {
+    scroll-behavior: auto;
+  }
+}
+

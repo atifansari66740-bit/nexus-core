@@ -437,6 +437,320 @@
 
   </section>
 
+        
+<!-- ========================================
+     PHASE 3 — ANALYTICS & INSIGHTS
+     TASK 2 — EVENTS OVER TIME CHART
+======================================== -->
+
+<section
+  class="ui-section"
+  aria-labelledby="analyticsEventsTrendTitle"
+>
+
+  <div class="section-heading ui-section__header">
+
+    <div>
+      <h2
+        class="ui-section__title"
+        id="analyticsEventsTrendTitle"
+      >
+        Events Over Time
+      </h2>
+
+      <p class="ui-section__description">
+        Track event volume across time intervals
+      </p>
+    </div>
+
+    <span class="status-pill ui-badge">
+      Sample data
+    </span>
+
+  </div>
+
+  <div class="ui-section__content">
+
+    <div
+      class="card"
+      id="analyticsEventsTrendPanel"
+    >
+
+      <div
+        id="analyticsEventsTrendChart"
+        role="img"
+        aria-label="Events over time chart"
+      >
+        <p class="muted">
+          Events trend visualization will appear here.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+        
+<!-- ========================================
+     PHASE 3 — ANALYTICS & INSIGHTS
+     TASK 3 — PERFORMANCE ANALYTICS
+======================================== -->
+
+<section
+  class="ui-section"
+  aria-labelledby="analyticsPerformanceTitle"
+>
+
+  <div class="section-heading ui-section__header">
+
+    <div>
+      <h2
+        class="ui-section__title"
+        id="analyticsPerformanceTitle"
+      >
+        Performance Analytics
+      </h2>
+
+      <p class="ui-section__description">
+        Monitor success rate, failure rate and response latency
+      </p>
+    </div>
+
+    <span class="status-pill ui-badge">
+      Sample data
+    </span>
+
+  </div>
+
+  <div class="metrics ui-section__content">
+
+    <article class="card kpi-card">
+      <div class="metric-label">Success Rate</div>
+      <div
+        class="metric-value"
+        id="analyticsPerformanceSuccessRate"
+      >—</div>
+      <div class="metric-foot">
+        <span class="muted">Successful events</span>
+      </div>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="metric-label">Failure Rate</div>
+      <div
+        class="metric-value"
+        id="analyticsPerformanceFailureRate"
+      >—</div>
+      <div class="metric-foot">
+        <span class="muted">Failed events</span>
+      </div>
+    </article>
+
+    <article class="card kpi-card">
+      <div class="metric-label">Average Latency</div>
+      <div
+        class="metric-value"
+        id="analyticsPerformanceLatency"
+      >—</div>
+      <div class="metric-foot">
+        <span class="muted">Average response time</span>
+      </div>
+    </article>
+
+  </div>
+
+</section>
+
+
+
+<!-- ========================================
+     PHASE 3 — TASK 4
+     EVENT DISTRIBUTION
+======================================== -->
+
+<section
+  class="ui-section"
+  aria-labelledby="analyticsDistributionTitle"
+>
+
+  <div class="section-heading ui-section__header">
+
+    <div>
+      <h2
+        class="ui-section__title"
+        id="analyticsDistributionTitle"
+      >
+        Event Distribution
+      </h2>
+
+      <p class="ui-section__description">
+        Explore event volume by type and source
+      </p>
+    </div>
+
+    <span class="status-pill ui-badge">
+      Sample data
+    </span>
+
+  </div>
+
+  <div class="ui-section__content">
+
+    <div class="grid-2">
+
+      <article class="card">
+        <h3>Events by Type</h3>
+
+        <p class="muted">
+          Distribution across event categories
+        </p>
+
+        <div
+          id="analyticsEventsByType"
+          role="img"
+          aria-label="Events distribution by type"
+        >
+          <p class="muted">
+            Event type distribution will appear here.
+          </p>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Events by Source</h3>
+
+        <p class="muted">
+          Distribution across event sources
+        </p>
+
+        <div
+          id="analyticsEventsBySource"
+          role="img"
+          aria-label="Events distribution by source"
+        >
+          <p class="muted">
+            Event source distribution will appear here.
+          </p>
+        </div>
+      </article>
+
+    </div>
+
+  </div>
+
+</section>
+
+        
+<!-- ========================================
+     PHASE 3 — TASK 5
+     COMPARATIVE ANALYTICS
+======================================== -->
+
+<section
+  class="ui-section"
+  aria-labelledby="analyticsComparisonTitle"
+>
+
+  <div class="section-heading ui-section__header">
+
+    <div>
+      <h2
+        class="ui-section__title"
+        id="analyticsComparisonTitle"
+      >
+        Comparative Analytics
+      </h2>
+
+      <p class="ui-section__description">
+        Compare platform performance across time periods
+      </p>
+    </div>
+
+    <span class="status-pill ui-badge">
+      Sample data
+    </span>
+
+  </div>
+
+  <div class="ui-section__content">
+
+    <div class="card">
+
+      <div class="metric-label">
+        Comparison Period
+      </div>
+
+      <select
+        id="analyticsComparisonRange"
+        aria-label="Select comparison time period"
+      >
+        <option value="24h">Last 24 Hours</option>
+        <option value="7d" selected>Last 7 Days</option>
+        <option value="30d">Last 30 Days</option>
+        <option value="90d">Last 90 Days</option>
+      </select>
+
+    </div>
+
+    <div class="metrics">
+
+      <article class="card kpi-card">
+        <div class="metric-label">
+          Event Volume Change
+        </div>
+
+        <div
+          class="metric-value"
+          id="analyticsComparisonEvents"
+        >—</div>
+
+        <div
+          class="metric-foot muted"
+          id="analyticsComparisonEventsDetail"
+        >Compared with previous period</div>
+      </article>
+
+      <article class="card kpi-card">
+        <div class="metric-label">
+          Success Rate Change
+        </div>
+
+        <div
+          class="metric-value"
+          id="analyticsComparisonSuccess"
+        >—</div>
+
+        <div
+          class="metric-foot muted"
+          id="analyticsComparisonSuccessDetail"
+        >Compared with previous period</div>
+      </article>
+
+      <article class="card kpi-card">
+        <div class="metric-label">
+          Average Latency Change
+        </div>
+
+        <div
+          class="metric-value"
+          id="analyticsComparisonLatency"
+        >—</div>
+
+        <div
+          class="metric-foot muted"
+          id="analyticsComparisonLatencyDetail"
+        >Compared with previous period</div>
+      </article>
+
+    </div>
+
+  </div>
+
+</section>
+        
+
 </section>
 
 
