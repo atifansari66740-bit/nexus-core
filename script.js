@@ -594,6 +594,13 @@ Object.keys(overviewData).forEach(function(rangeKey) {
 
 
 // ========================================
+// ANALYTICS — PREVIOUS PERIOD METRICS
+// ========================================
+
+let previousOverviewRangeMetrics = {};
+
+
+// ========================================
 // UPDATE OVERVIEW DATA
 // ========================================
 
@@ -642,6 +649,17 @@ function updateOverviewData() {
     workloads;
 
 
+  // Preserve previous metrics before updating the range
+
+if (overviewRangeMetrics[selectedRange]) {
+
+  previousOverviewRangeMetrics[selectedRange] = {
+    ...overviewRangeMetrics[selectedRange]
+  };
+
+}
+
+
 // Save metrics for the selected time range
 overviewRangeMetrics[selectedRange] = {
   totalEvents: overviewMetricState.totalEvents,
@@ -649,6 +667,27 @@ overviewRangeMetrics[selectedRange] = {
   averageLatency: overviewMetricState.averageLatency,
   workloads: overviewMetricState.workloads
 };
+
+
+        
+  // Synchronize Analytics with the latest Overview metrics
+
+  generateAnalyticsMetrics();
+
+  // Update KPI trends using current and previous metrics
+
+  generateAnalyticsTrends();
+
+  generateAnalyticsEventsTrend();
+
+  // Update dependent Performance Analytics
+
+  updateAnalyticsPerformance();
+
+  // Update Analytics Progress Bars
+
+  updateAnalyticsProgressBars();
+
 
 
 
@@ -803,15 +842,27 @@ chartCaption.innerHTML = chartRangeLabels[
 }).join("");
 
 
-  // Update timestamp
+  // Update timestamp after initial page load
 
-  document.getElementById("updatedAt").textContent =
-    "Sample data updated at " +
-    new Date().toLocaleTimeString();
+if (!isInitialOverviewLoad) {
+
+  const updatedAtElement =
+    document.getElementById("updatedAt");
+
+  if (updatedAtElement) {
+
+    updatedAtElement.textContent =
+      "Sample data updated at " +
+      new Date().toLocaleTimeString();
+
+  }
+
+}
 
 }
 
 
+const comparativeBaselineCache = Object.create(null);
 
 
 /* ========================================
@@ -902,25 +953,42 @@ const currentLatency = comparisonMetrics.averageLatency;
   }
 
 
-  // Generate previous-period sample baseline
+  // Generate or reuse previous-period sample baseline
 
-  const targetEventsChange =
-    randomBetween(-5, 8);
+let comparisonBaseline =
+  comparativeBaselineCache[selectedRange];
 
-  const previousEvents =
-    currentEvents / (1 + targetEventsChange / 100);
+if (!comparisonBaseline) {
 
-  const targetSuccessChange =
-    randomBetween(-0.04, 0.04);
+  comparisonBaseline = {
+    targetEventsChange: randomBetween(-5, 8),
+    targetSuccessChange: randomBetween(-0.04, 0.04),
+    targetLatencyChange: randomBetween(-8, 8)
+  };
 
-  const previousSuccess =
-    currentSuccess - targetSuccessChange;
+  comparativeBaselineCache[selectedRange] =
+    comparisonBaseline;
 
-  const targetLatencyChange =
-    randomBetween(-8, 8);
+}
 
-  const previousLatency =
-    currentLatency / (1 + targetLatencyChange / 100);
+const targetEventsChange =
+  comparisonBaseline.targetEventsChange;
+
+const previousEvents =
+  currentEvents / (1 + targetEventsChange / 100);
+
+const targetSuccessChange =
+  comparisonBaseline.targetSuccessChange;
+
+const previousSuccess =
+  currentSuccess - targetSuccessChange;
+
+const targetLatencyChange =
+  comparisonBaseline.targetLatencyChange;
+
+const previousLatency =
+  currentLatency / (1 + targetLatencyChange / 100);
+        
 
   // Calculate actual comparison changes
 
@@ -980,6 +1048,36 @@ const chartTooltip = document.getElementById("chartTooltip");
 
 const chartBarElements =
   document.querySelectorAll("#chartBars .bar");
+
+
+// Initialize initial chart event counts
+const initialChartTotal = 2480000;
+
+const initialChartHeights = Array.from(
+  chartBarElements,
+  bar => parseFloat(bar.style.height) || 0
+);
+
+const initialHeightTotal = initialChartHeights.reduce(
+  (sum, height) => sum + height,
+  0
+);
+
+let initialAllocatedEvents = 0;
+
+chartBarElements.forEach(function(bar, index) {
+  const events = index === chartBarElements.length - 1
+    ? initialChartTotal - initialAllocatedEvents
+    : Math.floor(
+        initialChartTotal *
+        initialChartHeights[index] /
+        initialHeightTotal
+      );
+
+  bar.dataset.events = String(events);
+  initialAllocatedEvents += events;
+});
+
 
 let activeTooltipBar = null;
 let lastChartPointerType = "mouse";
@@ -1094,11 +1192,12 @@ document.addEventListener("click", function(event) {
 });
 
 
-// Initialize Overview and Comparative Analytics
-
-updateOverviewData();
+// Initialize Comparative Analytics only
 
 updateComparativeAnalytics();
+
+
+
 
 
 // ========================================
@@ -1108,8 +1207,6 @@ updateComparativeAnalytics();
 timeRangeSelect.addEventListener("change", function() {
 
   updateOverviewData();
-
-  updateComparativeAnalytics();
 
 });
 
@@ -1137,7 +1234,6 @@ refreshButton.addEventListener("click", function() {
 
     updateOverviewData();
 
-    updateComparativeAnalytics();
 
   } finally {
 
@@ -1154,6 +1250,21 @@ refreshButton.addEventListener("click", function() {
   }
 
 });
+
+
+// ========================================
+// COMPARATIVE ANALYTICS RANGE SELECTOR
+// ========================================
+
+const analyticsComparisonRangeSelect =
+  document.getElementById("analyticsComparisonRange");
+
+if (analyticsComparisonRangeSelect) {
+  analyticsComparisonRangeSelect.addEventListener(
+    "change",
+    updateComparativeAnalytics
+  );
+}
 
 
 // ========================================
@@ -1352,18 +1463,22 @@ row.setAttribute("role", "button");
 
 const dataExplorerRecords = generateDataExplorerRecords(24);
 
+
+
 /* ========================================
-   PHASE 3 — TASK 4
-   EVENT DISTRIBUTION
+   PHASE 3 — TASK 6
+   INTERACTIVE EVENT DISTRIBUTION
 ======================================== */
 
 function updateAnalyticsEventDistribution() {
 
-  const typeElement =
-    document.getElementById("analyticsEventsByType");
+  const typeElement = document.getElementById(
+    "analyticsEventsByType"
+  );
 
-  const sourceElement =
-    document.getElementById("analyticsEventsBySource");
+  const sourceElement = document.getElementById(
+    "analyticsEventsBySource"
+  );
 
   if (!typeElement || !sourceElement) {
     console.warn("Event Distribution elements not found.");
@@ -1430,12 +1545,236 @@ function updateAnalyticsEventDistribution() {
 
   sourceElement.innerHTML =
     generateDistribution(dataExplorerRecords, "source");
+
+
+  // Interactive distribution handler
+  
+  
+  function setupDistributionInteraction(
+    container,
+    detailBox,
+    defaultTitle,
+    defaultMessage
+  ) {
+
+    if (!container || !detailBox) return;
+
+    const detailTitle = detailBox.querySelector("strong");
+    const detailValue = detailBox.querySelector("span");
+
+    if (!detailTitle || !detailValue) return;
+
+    const items = container.querySelectorAll(
+      ".analytics-distribution__item"
+    );
+
+    let activeItem = null;
+    let lastPointerType = "mouse";
+
+    
+
+    function showDetails(item) {
+
+      const heading = item.querySelector(
+        ".analytics-distribution__heading"
+      );
+
+      if (!heading) return;
+
+      const spans = heading.querySelectorAll("span");
+
+      const label = spans[0]
+        ? spans[0].textContent.trim()
+        : "Unknown";
+
+      const value = spans[1]
+        ? spans[1].textContent.trim()
+        : "";
+
+      detailTitle.textContent = label;
+      detailValue.textContent = value;
+
+      items.forEach(element => {
+        const isActive = element === item;
+
+        element.classList.toggle("is-active", isActive);
+
+        element.setAttribute(
+          "aria-pressed",
+          String(isActive)
+        );
+      });
+
+      activeItem = item;
+    }
+
+    function hideDetails() {
+
+      detailTitle.textContent = defaultTitle;
+      detailValue.textContent = defaultMessage;
+
+      items.forEach(item => {
+        item.classList.remove("is-active");
+        item.setAttribute("aria-pressed", "false");
+      });
+
+      activeItem = null;
+    }
+
+
+    // Remove previous outside pointer listener
+if (container._outsidePointerHandler) {
+  document.removeEventListener(
+    "pointerdown",
+    container._outsidePointerHandler
+  );
+}
+        
+
+    // Close only when tapping outside both distribution charts
+  container._outsidePointerHandler = function(event) {
+
+  const target = event.target;
+
+  if (
+    target instanceof Element &&
+    target.closest(
+      "#analyticsEventsByType, #analyticsEventsBySource, .analytics-distribution__detail"
+    )
+  ) {
+    return;
+  }
+
+  hideDetails();
+};
+
+document.addEventListener(
+  "pointerdown",
+  container._outsidePointerHandler
+);
+
+    items.forEach(item => {
+
+      item.setAttribute("role", "button");
+      item.setAttribute("tabindex", "0");
+      item.setAttribute("aria-pressed", "false");
+
+      item.addEventListener("pointerdown", function(event) {
+        lastPointerType = event.pointerType;
+      });
+
+      item.addEventListener("pointerenter", function(event) {
+        if (event.pointerType === "mouse") {
+          showDetails(item);
+        }
+      });
+
+      item.addEventListener("pointerleave", function(event) {
+
+        if (event.pointerType !== "mouse") return;
+
+        const nextTarget = event.relatedTarget;
+
+if (
+  nextTarget instanceof Element &&
+  nextTarget.closest(
+    "#analyticsEventsByType, #analyticsEventsBySource, .analytics-distribution__detail"
+  )
+) {
+  return;
+}
+
+        hideDetails();
+      });
+
+      item.addEventListener("click", function() {
+
+        if (lastPointerType !== "mouse") {
+
+          if (activeItem === item) {
+            hideDetails();
+          } else {
+            showDetails(item);
+          }
+        }
+      });
+
+      item.addEventListener("focus", function() {
+        if (
+          document.body.classList.contains(
+            "keyboard-navigation"
+          )
+        ) {
+          showDetails(item);
+        }
+      });
+
+      
+item.addEventListener("blur", function(event) {
+
+  const nextTarget = event.relatedTarget;
+
+  if (!nextTarget) return;
+
+  if (
+    nextTarget instanceof Element &&
+    nextTarget.closest(
+      "#analyticsEventsByType, #analyticsEventsBySource, .analytics-distribution__detail"
+    )
+  ) {
+    return;
+  }
+
+  hideDetails();
+});
+
+
+      item.addEventListener("keydown", function(event) {
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+
+          if (activeItem === item) {
+            hideDetails();
+          } else {
+            showDetails(item);
+          }
+        }
+      });
+    });
+  }
+
+
+  // Events by Type interaction
+  setupDistributionInteraction(
+    typeElement,
+    typeElement.parentElement.querySelector(
+      ".analytics-distribution__detail"
+    ),
+    "Type details",
+    "Select a category to view its data."
+  );
+
+
+  // Events by Source interaction
+  setupDistributionInteraction(
+    sourceElement,
+    sourceElement.parentElement.querySelector(
+      ".analytics-distribution__detail"
+    ),
+    "Source details",
+    "Select a source to view its data."
+  );
+
 }
 
 updateAnalyticsEventDistribution();
 
-
 renderDataExplorerTable(dataExplorerRecords);
+
 
 
 /* ========================================
@@ -1655,10 +1994,22 @@ if (
   nextPageBtn
 ) {
   pageSizeSelect.addEventListener("change", function() {
-    dataPageSize = Number(pageSizeSelect.value);
-    currentDataPage = 1;
-    filterDataExplorerRecords();
-  });
+
+  const requestedPageSize = Number(
+    pageSizeSelect.value
+  );
+
+  dataPageSize =
+    Number.isInteger(requestedPageSize) &&
+    requestedPageSize > 0
+      ? requestedPageSize
+      : 5;
+
+  currentDataPage = 1;
+
+  filterDataExplorerRecords();
+
+});
 
   previousPageBtn.addEventListener("click", function() {
     if (currentDataPage > 1) {
@@ -1856,43 +2207,57 @@ const analyticsMetricState = {
 };
 
 
+
 /* ========================================
    PHASE 3 — ANALYTICS & INSIGHTS
-   TASK 1 — ANALYTICS KPI GENERATOR
+   TASK 1 — SHARED KPI DATA
 ======================================== */
 
 function generateAnalyticsMetrics() {
 
-  // Generate sample analytics values
+  // Read the currently selected Overview range
 
-  const totalEvents = Math.floor(
-    randomBetween(2400000, 2600000)
-  );
+  const selectedRange = timeRangeSelect.value;
 
-  const successRate = randomBetween(
-    99.90,
-    99.99
-  );
+  const overviewMetrics =
+    overviewRangeMetrics[selectedRange];
 
-  const averageLatency = Math.floor(
-    randomBetween(70, 110)
-  );
+  if (!overviewMetrics) {
+    console.warn(
+      "Overview metrics unavailable for selected range."
+    );
+    return;
+  }
+
+  // Validate source data
+
+  if (
+    !Number.isFinite(overviewMetrics.totalEvents) ||
+    overviewMetrics.totalEvents <= 0 ||
+    !Number.isFinite(overviewMetrics.successRate) ||
+    !Number.isFinite(overviewMetrics.averageLatency) ||
+    !Number.isFinite(overviewMetrics.workloads)
+  ) {
+    console.warn("Invalid Overview shared metrics.");
+    return;
+  }
+
+  // Calculate failed events from the shared metrics
+
+  const totalEvents = overviewMetrics.totalEvents;
+  const successRate = overviewMetrics.successRate;
+  const averageLatency = overviewMetrics.averageLatency;
 
   const failedEvents = Math.round(
     totalEvents * (1 - successRate / 100)
   );
 
+  // Synchronize Analytics shared state
 
-        // Store exact Analytics values in shared state
-
-analyticsMetricState.totalEvents = totalEvents;
-
-analyticsMetricState.successRate = successRate;
-
-analyticsMetricState.averageLatency = averageLatency;
-
-analyticsMetricState.failedEvents = failedEvents;
-
+  analyticsMetricState.totalEvents = totalEvents;
+  analyticsMetricState.successRate = successRate;
+  analyticsMetricState.averageLatency = averageLatency;
+  analyticsMetricState.failedEvents = failedEvents;
 
   // Update Analytics KPI cards
 
@@ -1911,7 +2276,6 @@ analyticsMetricState.failedEvents = failedEvents;
   const failedEventsElement = document.getElementById(
     "analyticsFailedEvents"
   );
-
 
   if (totalEventsElement) {
     totalEventsElement.textContent =
@@ -1936,9 +2300,14 @@ analyticsMetricState.failedEvents = failedEvents;
 }
 
 
-// Initialize Analytics Overview
 
-generateAnalyticsMetrics();
+// Initialize Overview and Analytics with shared data
+
+let isInitialOverviewLoad = true;
+
+updateOverviewData();
+
+isInitialOverviewLoad = false;
 
 
 
@@ -1996,7 +2365,7 @@ function updateAnalyticsPerformance() {
     averageLatency + " ms";
 }
 
-updateAnalyticsPerformance();
+
 
 
 
@@ -2004,6 +2373,7 @@ updateAnalyticsPerformance();
    PHASE 3 — ANALYTICS & INSIGHTS
    TASK 1 — KPI TREND INDICATORS
 ======================================== */
+
 
 function generateAnalyticsTrends() {
 
@@ -2013,45 +2383,142 @@ function generateAnalyticsTrends() {
 
   if (!analyticsPage) return;
 
-  const trendElements = analyticsPage.querySelectorAll(
-    ".metric-foot .muted"
-  );
+  const analyticsOverview = analyticsPage.querySelector(".ui-section");
 
-  if (trendElements.length !== 4) {
-    console.warn("Analytics KPI trend elements not found.");
+if (!analyticsOverview) return;
+
+const trendElements = analyticsOverview.querySelectorAll(
+  ".metrics .metric-foot .muted"
+);
+
+if (trendElements.length !== 4) {
+  console.warn("Analytics KPI trend elements not found.");
+  return;
+}
+
+  const selectedRange = timeRangeSelect.value;
+
+  const currentMetrics =
+    overviewRangeMetrics[selectedRange];
+
+  const previousMetrics =
+    previousOverviewRangeMetrics[selectedRange];
+
+  if (!currentMetrics || !previousMetrics) {
+
+    trendElements.forEach(function(element) {
+      element.textContent = "Previous period comparison unavailable";
+    });
+
     return;
   }
 
-  // Generate sample trend percentages
+  const values = [
+    currentMetrics.totalEvents,
+    currentMetrics.successRate,
+    currentMetrics.averageLatency,
+    currentMetrics.totalEvents *
+      (1 - currentMetrics.successRate / 100),
 
-  const totalEventsTrend = randomBetween(2.1, 5.8);
-  const successRateTrend = randomBetween(0.02, 0.12);
-  const latencyTrend = randomBetween(1.5, 6.5);
-  const failedEventsTrend = randomBetween(2.0, 8.0);
+    previousMetrics.totalEvents,
+    previousMetrics.successRate,
+    previousMetrics.averageLatency,
+    previousMetrics.totalEvents *
+      (1 - previousMetrics.successRate / 100)
+  ];
 
-  // Update KPI trend information
+  if (!values.every(Number.isFinite)) {
+    console.warn("Invalid Analytics trend comparison values.");
+    return;
+  }
 
-  trendElements[0].textContent =
-    "↑ " + totalEventsTrend.toFixed(2) +
-    "% vs previous period";
+  const currentFailedEvents = Math.round(values[3]);
+  const previousFailedEvents = Math.round(values[7]);
 
-  trendElements[1].textContent =
-    "↑ " + successRateTrend.toFixed(2) +
-    " percentage points vs previous period";
+  function getArrow(current, previous) {
 
-  trendElements[2].textContent =
-    "↓ " + latencyTrend.toFixed(2) +
-    "% vs previous period";
+    if (current > previous) return "↑";
+    if (current < previous) return "↓";
 
-  trendElements[3].textContent =
-    "↓ " + failedEventsTrend.toFixed(2) +
-    "% vs previous period";
+    return "→";
+  }
+
+  function getPercentageChange(current, previous) {
+
+    if (previous === 0) return null;
+
+    return ((current - previous) / Math.abs(previous)) * 100;
+  }
+
+  // Total Events trend
+
+  const eventsChange = getPercentageChange(
+    currentMetrics.totalEvents,
+    previousMetrics.totalEvents
+  );
+
+  // Success Rate trend in percentage points
+
+  const successChange =
+    currentMetrics.successRate -
+    previousMetrics.successRate;
+
+  // Average Latency trend
+
+  const latencyChange = getPercentageChange(
+    currentMetrics.averageLatency,
+    previousMetrics.averageLatency
+  );
+
+  // Failed Events trend
+
+  const failedChange = getPercentageChange(
+    currentFailedEvents,
+    previousFailedEvents
+  );
+
+  const trendResults = [
+    eventsChange === null
+      ? "Comparison unavailable"
+      : getArrow(
+          currentMetrics.totalEvents,
+          previousMetrics.totalEvents
+        ) + " " + Math.abs(eventsChange).toFixed(2) +
+        "% vs previous period",
+
+    getArrow(
+      currentMetrics.successRate,
+      previousMetrics.successRate
+    ) + " " + Math.abs(successChange).toFixed(2) +
+      " percentage points vs previous period",
+
+    latencyChange === null
+      ? "Comparison unavailable"
+      : getArrow(
+          currentMetrics.averageLatency,
+          previousMetrics.averageLatency
+        ) + " " + Math.abs(latencyChange).toFixed(2) +
+        "% vs previous period",
+
+    failedChange === null
+      ? "Comparison unavailable"
+      : getArrow(
+          currentFailedEvents,
+          previousFailedEvents
+        ) + " " + Math.abs(failedChange).toFixed(2) +
+        "% vs previous period"
+  ];
+
+  trendElements.forEach(function(element, index) {
+
+    element.textContent = trendResults[index];
+
+  });
 
 }
 
-// Initialize Analytics KPI Trends
 
-generateAnalyticsTrends();
+
 
 
 /* ========================================
@@ -2060,8 +2527,6 @@ generateAnalyticsTrends();
 ======================================== */
 
 function updateAnalyticsProgressBars() {
-
-  // Read current Analytics KPI values
 
   const totalEventsElement = document.getElementById(
     "analyticsTotalEvents"
@@ -2084,21 +2549,12 @@ function updateAnalyticsProgressBars() {
     !successRateElement ||
     !latencyElement ||
     !failedEventsElement
-  ) {
-    return;
-  }
-
-  
-  // Read exact values from shared Analytics state
+  ) return;
 
   const totalEvents = analyticsMetricState.totalEvents;
-
   const successRate = analyticsMetricState.successRate;
-
   const averageLatency = analyticsMetricState.averageLatency;
-
   const failedEvents = analyticsMetricState.failedEvents;
-
 
   if (
     !Number.isFinite(totalEvents) ||
@@ -2113,13 +2569,21 @@ function updateAnalyticsProgressBars() {
     return;
   }
 
-  // Calculate progress percentages
+  const selectedRange = timeRangeSelect.value;
+
+  const eventTargets = {
+    "24h": 3000000,
+    "7d": 20000000,
+    "30d": 80000000,
+    "90d": 230000000
+  };
+
+  const eventTarget = eventTargets[selectedRange] || 3000000;
 
   const totalEventsProgress =
-    (totalEvents / 3000000) * 100;
+    (totalEvents / eventTarget) * 100;
 
-  const successRateProgress =
-    successRate;
+  const successRateProgress = successRate;
 
   const latencyProgress =
     ((200 - averageLatency) / 200) * 100;
@@ -2130,9 +2594,6 @@ function updateAnalyticsProgressBars() {
   const failedEventsProgress =
     100 - (failureRate / 0.2) * 100;
 
-
-  // Keep all progress values between 0 and 100
-
   const progressValues = [
     totalEventsProgress,
     successRateProgress,
@@ -2142,18 +2603,12 @@ function updateAnalyticsProgressBars() {
     Math.max(0, Math.min(100, value))
   );
 
-
-  // Progress bar element IDs
-
   const progressIds = [
     "analyticsTotalEvents",
     "analyticsSuccessRate",
     "analyticsAverageLatency",
     "analyticsFailedEvents"
   ];
-
-
-  // Update progress bars and accessibility values
 
   progressIds.forEach((id, index) => {
 
@@ -2183,7 +2638,7 @@ function updateAnalyticsProgressBars() {
 
 // Initialize Analytics Progress Bars
 
-updateAnalyticsProgressBars();
+
 
 
 /* ========================================
@@ -2211,27 +2666,99 @@ if (!Number.isFinite(totalEvents) || totalEvents <= 0) {
   console.warn("Invalid Analytics shared Total Events value.");
   return;
 }
+        
 
-  // Twelve two-hour intervals covering 24 hours
+  // Generate labels according to selected time range
 
-  const intervals = [
+const selectedRange = document.getElementById(
+  "timeRangeSelect"
+)?.value || "24h";
+
+const rangeIntervals = {
+
+  "24h": [
     "00:00", "02:00", "04:00", "06:00",
     "08:00", "10:00", "12:00", "14:00",
     "16:00", "18:00", "20:00", "22:00"
-  ];
+  ],
 
-  // Distribution weights: total = 2440
+  "7d": [
+    "0–14h", "14–28h", "28–42h",
+    "42–56h", "56–70h", "70–84h",
+    "84–98h", "98–112h", "112–126h",
+    "126–140h", "140–154h", "154–168h"
+  ],
 
-  const weights = [
-    168, 182, 195, 176,
-    205, 214, 198, 226,
-    235, 218, 207, 216
-  ];
+  "30d": [
+    "0–2.5d", "2.5–5d", "5–7.5d",
+    "7.5–10d", "10–12.5d", "12.5–15d",
+    "15–17.5d", "17.5–20d", "20–22.5d",
+    "22.5–25d", "25–27.5d", "27.5–30d"
+  ],
 
-  const weightTotal = weights.reduce(
-    (sum, value) => sum + value,
-    0
-  );
+  "90d": [
+    "0–7.5d", "7.5–15d", "15–22.5d",
+    "22.5–30d", "30–37.5d", "37.5–45d",
+    "45–52.5d", "52.5–60d", "60–67.5d",
+    "67.5–75d", "75–82.5d", "82.5–90d"
+  ]
+
+};
+
+const intervals = rangeIntervals[selectedRange]
+  || rangeIntervals["24h"];
+        
+
+  
+  // Range-wise Distribution Weights
+
+  const rangeWeights = {
+
+    "24h": [
+      120, 135, 150, 165,
+      185, 205, 225, 240,
+      250, 235, 215, 175
+    ],
+
+    "7d": [
+      190, 205, 220, 185,
+      240, 255, 210, 230,
+      265, 245, 215, 240
+    ],
+
+    "30d": [
+      145, 175, 195, 225,
+      205, 240, 260, 230,
+      250, 215, 190, 270
+    ],
+
+    "90d": [
+      210, 185, 245, 225,
+      270, 235, 255, 290,
+      240, 275, 220, 250
+    ]
+
+  };
+
+  
+const baseWeights = rangeWeights[selectedRange]
+  || rangeWeights["24h"];
+
+// Generate a fresh distribution on every refresh
+
+const weights = baseWeights.map(weight => {
+
+  const variation = 0.75 + Math.random() * 0.5;
+
+  return Math.round(weight * variation);
+
+});
+
+const weightTotal = weights.reduce(
+  (sum, value) => sum + value,
+  0
+);
+
 
   // Generate event counts for each interval
 
@@ -2257,6 +2784,30 @@ if (!Number.isFinite(totalEvents) || totalEvents <= 0) {
     };
 
   });
+
+
+  // Validate total Events across all 12 chart bars
+
+const chartEventsTotal = trendData.reduce(
+  (sum, item) => sum + item.events,
+  0
+);
+
+if (chartEventsTotal !== totalEvents) {
+
+  console.error(
+    "Analytics Events Trend total mismatch:",
+    {
+      expected: totalEvents,
+      actual: chartEventsTotal,
+      difference: totalEvents - chartEventsTotal
+    }
+  );
+
+  return;
+
+}
+        
 
   // Find the maximum value for chart scaling
 
@@ -2306,10 +2857,845 @@ if (!Number.isFinite(totalEvents) || totalEvents <= 0) {
     </div>
   `;
 
+initializeAnalyticsTrendInteractions();
+
 }
 
 
 // Initialize Events Over Time Chart
 
-generateAnalyticsEventsTrend();
+
+
+
+
+// ========================================
+// PHASE 3 — TASK 6
+// INTERACTIVE EVENTS OVER TIME CHART
+// ========================================
+
+
+
+// ========================================
+// PHASE 3 — TASK 6
+// INTERACTIVE EVENTS OVER TIME CHART
+// REUSABLE INTERACTION SETUP
+// ========================================
+
+function initializeAnalyticsTrendInteractions() {
+
+  const analyticsTrendChart = document.getElementById(
+    "analyticsEventsTrendChart"
+  );
+
+  if (!analyticsTrendChart) return;
+
+  const trendColumns = analyticsTrendChart.querySelectorAll(
+    ".analytics-trend-chart__column"
+  );
+
+  // Find or create chart detail panel
+
+  let trendDetail = document.querySelector(
+    ".analytics-trend-chart__detail"
+  );
+
+  if (!trendDetail) {
+
+    trendDetail = document.createElement("div");
+
+    trendDetail.className =
+      "analytics-trend-chart__detail";
+
+    trendDetail.setAttribute("aria-live", "polite");
+
+    analyticsTrendChart.insertAdjacentElement(
+      "afterend",
+      trendDetail
+    );
+
+  }
+
+  
+  // Create or reuse detail content
+
+  let detailTitle = trendDetail.querySelector("strong");
+  let detailValue = trendDetail.querySelector("span");
+
+  if (!detailTitle || !detailValue) {
+
+    trendDetail.innerHTML = "";
+
+    detailTitle = document.createElement("strong");
+    detailValue = document.createElement("span");
+
+    trendDetail.appendChild(detailTitle);
+    trendDetail.appendChild(detailValue);
+
+  }
+
+  detailTitle.textContent = "Chart details";
+
+  detailValue.textContent =
+    "Select a bar to view its data.";
+
+
+  let activeTrendColumn = null;
+  let lastTrendPointerType = "mouse";
+
+
+  // Remove the previous outside pointer listener
+
+  if (analyticsTrendChart._outsidePointerHandler) {
+
+    document.removeEventListener(
+      "pointerdown",
+      analyticsTrendChart._outsidePointerHandler
+    );
+
+  }
+
+  // Create a fresh outside pointer listener
+
+  analyticsTrendChart._outsidePointerHandler = function(event) {
+
+    if (
+      !analyticsTrendChart.contains(event.target) &&
+      !trendDetail.contains(event.target)
+    ) {
+      hideTrendDetails();
+    }
+
+  };
+
+  document.addEventListener(
+    "pointerdown",
+    analyticsTrendChart._outsidePointerHandler
+  );
+
+
+  // Display selected bar information
+
+  function showTrendDetails(column) {
+
+    const eventCount = Number(
+      column.dataset.eventCount || 0
+    );
+
+    const timeLabel = column.querySelector(
+      ".analytics-trend-chart__label"
+    );
+
+    const interval = timeLabel
+      ? timeLabel.textContent.trim()
+      : "Unknown interval";
+
+    detailTitle.textContent = interval;
+
+    detailValue.textContent =
+      "Events: " + eventCount.toLocaleString("en-US");
+
+    trendColumns.forEach(function(item) {
+
+      const isActive = item === column;
+
+      item.classList.toggle("is-active", isActive);
+
+      item.setAttribute(
+        "aria-pressed",
+        String(isActive)
+      );
+
+    });
+
+    activeTrendColumn = column;
+
+  }
+
+
+  // Hide selected bar information
+
+  function hideTrendDetails() {
+
+    detailTitle.textContent = "Chart details";
+
+    detailValue.textContent =
+      "Select a bar to view its data.";
+
+    trendColumns.forEach(function(column) {
+
+      column.classList.remove("is-active");
+
+      column.setAttribute("aria-pressed", "false");
+
+    });
+
+    activeTrendColumn = null;
+
+  }
+
+
+  // Attach interactions to all chart bars
+
+  trendColumns.forEach(function(column) {
+
+    column.setAttribute("tabindex", "0");
+    column.setAttribute("role", "button");
+    column.setAttribute("aria-pressed", "false");
+
+    column.addEventListener("pointerdown", function(event) {
+
+      lastTrendPointerType = event.pointerType;
+
+    });
+
+    // Desktop mouse hover
+
+    column.addEventListener("pointerenter", function(event) {
+
+      if (event.pointerType === "mouse") {
+        showTrendDetails(column);
+      }
+
+    });
+
+    column.addEventListener("pointerleave", function(event) {
+
+  if (event.pointerType !== "mouse") return;
+
+  const nextTarget = event.relatedTarget;
+
+  if (
+    nextTarget instanceof Element &&
+    (
+      analyticsTrendChart.contains(nextTarget) ||
+      trendDetail.contains(nextTarget)
+    )
+  ) {
+    return;
+  }
+
+  if (document.activeElement !== column) {
+    hideTrendDetails();
+  }
+
+});
+
+    // Mobile tap
+
+    column.addEventListener("click", function() {
+
+      if (lastTrendPointerType !== "mouse") {
+
+        if (activeTrendColumn === column) {
+          hideTrendDetails();
+        } else {
+          showTrendDetails(column);
+        }
+
+      }
+
+    });
+
+    
+  // Keyboard focus
+
+  column.addEventListener("focus", function() {
+
+    if (
+      document.body.classList.contains(
+        "keyboard-navigation"
+      )
+    ) {
+      showTrendDetails(column);
+    }
+
+  });
+
+  // Hide details only when focus moves
+  // to another focusable element outside the chart
+
+  column.addEventListener("blur", function(event) {
+
+    const nextTarget = event.relatedTarget;
+
+    if (!nextTarget) return;
+
+    if (
+      analyticsTrendChart.contains(nextTarget) ||
+      trendDetail.contains(nextTarget)
+    ) {
+      return;
+    }
+
+    hideTrendDetails();
+
+  });
+
+
+    // Keyboard activation
+
+    column.addEventListener("keydown", function(event) {
+
+      if (
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+
+        event.preventDefault();
+
+        if (activeTrendColumn === column) {
+          hideTrendDetails();
+        } else {
+          showTrendDetails(column);
+        }
+
+      }
+
+    });
+
+  });
+
+}
+
+
+
+/* =========================================
+   PHASE 4 — AI & INFRASTRUCTURE
+   TASK 1 — AI MODELS INTERFACE
+   STEP 2 — DATA & INTERACTIVE FUNCTIONALITY
+========================================= */
+
+(() => {
+  "use strict";
+
+  const aiPage = document.getElementById("page-ai");
+
+  if (!aiPage) return;
+
+  const getElement = (id) => document.getElementById(id);
+
+  const elements = {
+    total: getElement("aiTotalModels"),
+    active: getElement("aiActiveModels"),
+    inactive: getElement("aiInactiveModels"),
+    health: getElement("aiModelHealth"),
+
+    available: getElement("aiAvailableModels"),
+    limited: getElement("aiLimitedModels"),
+    unavailable: getElement("aiUnavailableModels"),
+
+    search: getElement("aiModelSearch"),
+    statusFilter: getElement("aiModelStatusFilter"),
+    providerFilter: getElement("aiModelProviderFilter"),
+    tableBody: getElement("aiModelsTableBody"),
+    recordCount: getElement("aiModelRecordCount"),
+
+    detailStatus: getElement("aiDetailStatus"),
+    detailName: getElement("aiDetailName"),
+    detailDescription: getElement("aiDetailDescription"),
+    detailId: getElement("aiDetailId"),
+    detailProvider: getElement("aiDetailProvider"),
+    detailVersion: getElement("aiDetailVersion"),
+    detailType: getElement("aiDetailType"),
+    detailDeployment: getElement("aiDetailDeployment"),
+    detailAvailability: getElement("aiDetailAvailability"),
+
+    requests: getElement("aiDetailRequests"),
+    responseTime: getElement("aiDetailResponseTime"),
+    latency: getElement("aiDetailLatency"),
+    success: getElement("aiDetailSuccess"),
+    error: getElement("aiDetailError"),
+    utilization: getElement("aiDetailUtilization"),
+    utilizationBar: getElement("aiDetailUtilizationBar"),
+
+    strategy: getElement("aiModelStrategy"),
+    deploymentTarget: getElement("aiModelDeploymentTarget"),
+    toggleButton: getElement("aiToggleModelButton"),
+    saveButton: getElement("aiSaveModelConfig"),
+    message: getElement("aiManagementMessage")
+  };
+
+  if (Object.values(elements).some((element) => !element)) {
+    console.error("AI Models: Required HTML elements are missing.");
+    return;
+  }
+
+  // -----------------------------------------
+  // 1. SIMULATED AI MODEL DATA
+  // -----------------------------------------
+
+  const aiModels = [
+    {
+      id: "NXC-MOD-001",
+      name: "Nexus Language Core",
+      provider: "Northstar AI",
+      version: "2.4.1",
+      type: "Language",
+      status: "Active",
+      deployment: "Production",
+      description: "General-purpose language model for platform workloads.",
+      requests: 128450,
+      responseTime: 168,
+      latency: 142,
+      success: 99.4,
+      error: 0.6,
+      utilization: 72,
+      strategy: "balanced"
+    },
+    {
+      id: "NXC-MOD-002",
+      name: "Nexus Vision Engine",
+      provider: "Google",
+      version: "1.8.2",
+      type: "Vision",
+      status: "Active",
+      deployment: "Production",
+      description: "Image understanding and visual analysis workloads.",
+      requests: 96420,
+      responseTime: 214,
+      latency: 186,
+      success: 98.9,
+      error: 1.1,
+      utilization: 81,
+      strategy: "high-throughput"
+    },
+    {
+      id: "NXC-MOD-003",
+      name: "Claude Reasoning",
+      provider: "Anthropic",
+      version: "3.2.0",
+      type: "Reasoning",
+      status: "Active",
+      deployment: "Production",
+      description: "Advanced reasoning and complex task processing.",
+      requests: 87310,
+      responseTime: 247,
+      latency: 215,
+      success: 99.1,
+      error: 0.9,
+      utilization: 64,
+      strategy: "balanced"
+    },
+    {
+      id: "NXC-MOD-004",
+      name: "GPT Intelligence",
+      provider: "OpenAI",
+      version: "5.1.0",
+      type: "Language",
+      status: "Active",
+      deployment: "Staging",
+      description: "Language generation and intelligent task assistance.",
+      requests: 112680,
+      responseTime: 156,
+      latency: 128,
+      success: 99.7,
+      error: 0.3,
+      utilization: 76,
+      strategy: "low-latency"
+    },
+    {
+      id: "NXC-MOD-005",
+      name: "Nexus Embedding",
+      provider: "Northstar AI",
+      version: "1.2.0",
+      type: "Embedding",
+      status: "Inactive",
+      deployment: "Development",
+      description: "Semantic vector representation for data retrieval.",
+      requests: 45200,
+      responseTime: 121,
+      latency: 94,
+      success: 97.8,
+      error: 2.2,
+      utilization: 0,
+      strategy: "high-throughput"
+    },
+    {
+      id: "NXC-MOD-006",
+      name: "Gemini Data Analyst",
+      provider: "Google",
+      version: "2.0.1",
+      type: "Analytics",
+      status: "Inactive",
+      deployment: "Development",
+      description: "Structured data interpretation and analytical workloads.",
+      requests: 38250,
+      responseTime: 205,
+      latency: 173,
+      success: 98.2,
+      error: 1.8,
+      utilization: 0,
+      strategy: "balanced"
+    }
+  ];
+
+  let selectedModelId = aiModels[0].id;
+
+  // -----------------------------------------
+  // 2. HELPER FUNCTIONS
+  // -----------------------------------------
+
+  const getSelectedModel = () =>
+    aiModels.find((model) => model.id === selectedModelId);
+
+  const setText = (element, value) => {
+    element.textContent = String(value);
+  };
+
+  const formatNumber = (value) =>
+    new Intl.NumberFormat("en-US").format(value);
+
+  // -----------------------------------------
+// MODEL AVAILABILITY LOGIC
+// -----------------------------------------
+
+function getModelAvailability(model) {
+  if (model.status !== "Active") {
+    return "Unavailable";
+  }
+
+  if (model.deployment !== "Production") {
+    return "Limited";
+  }
+
+  return "Available";
+}
+
+
+    // -----------------------------------------
+  // MODEL HEALTH SCORE
+  // -----------------------------------------
+
+  function getModelHealthScore(model) {
+    const successScore = Math.min(
+      100,
+      Math.max(0, Number(model.success) || 0)
+    );
+
+    const latency = Math.max(
+      0,
+      Number(model.latency) || 0
+    );
+
+    const latencyScore = Math.max(
+      0,
+      Math.min(100, 100 - (latency / 300) * 100)
+    );
+
+    const availability = getModelAvailability(model);
+
+    const availabilityFactor =
+      availability === "Available"
+        ? 1
+        : availability === "Limited"
+          ? 0.75
+          : 0;
+
+    const baseHealth =
+      (successScore * 0.7) +
+      (latencyScore * 0.3);
+
+    return baseHealth * availabilityFactor;
+  }
+        
+
+    // -----------------------------------------
+  // 3. UPDATE OVERVIEW KPIs
+  // -----------------------------------------
+
+  function updateAIOverview() {
+    const total = aiModels.length;
+
+    const activeModels = aiModels.filter(
+      (model) => model.status === "Active"
+    );
+
+    const inactive = total - activeModels.length;
+
+    const health = activeModels.length
+      ? activeModels.reduce(
+          (sum, model) => sum + getModelHealthScore(model),
+          0
+        ) / activeModels.length
+      : 0;
+
+    const availabilityCounts = {
+      Available: 0,
+      Limited: 0,
+      Unavailable: 0
+    };
+
+    aiModels.forEach((model) => {
+      const availability = getModelAvailability(model);
+      availabilityCounts[availability]++;
+    });
+
+    setText(elements.total, total);
+    setText(elements.active, activeModels.length);
+    setText(elements.inactive, inactive);
+    setText(elements.health, health.toFixed(1) + "%");
+
+    setText(elements.available, availabilityCounts.Available);
+    setText(elements.limited, availabilityCounts.Limited);
+    setText(elements.unavailable, availabilityCounts.Unavailable);
+  }
+        
+
+  // -----------------------------------------
+  // 4. RENDER MODEL REGISTRY
+  // -----------------------------------------
+
+  function renderAIModels() {
+    const searchTerm = elements.search.value
+      .trim()
+      .toLowerCase();
+
+    const statusValue = elements.statusFilter.value;
+    const providerValue = elements.providerFilter.value;
+
+    const filteredModels = aiModels.filter((model) => {
+      const searchableText = [
+        model.name,
+        model.id,
+        model.provider,
+        model.version,
+        model.type,
+        getModelAvailability(model)
+      ].join(" ").toLowerCase();
+
+      const matchesSearch = searchableText.includes(searchTerm);
+
+      const matchesStatus =
+        statusValue === "all" ||
+        model.status === statusValue;
+
+      const matchesProvider =
+        providerValue === "all" ||
+        model.provider === providerValue;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesProvider
+      );
+    });
+
+    elements.tableBody.replaceChildren();
+
+    if (filteredModels.length === 0) {
+      const row = document.createElement("tr");
+      const cell = document.createElement("td");
+
+      cell.colSpan = 8;
+      cell.textContent = "No matching AI models found.";
+      cell.style.textAlign = "center";
+      cell.style.padding = "24px";
+
+      row.appendChild(cell);
+      elements.tableBody.appendChild(row);
+    } else {
+      filteredModels.forEach((model) => {
+        const row = document.createElement("tr");
+
+        row.dataset.modelId = model.id;
+        row.tabIndex = 0;
+        row.setAttribute("aria-selected", String(
+          model.id === selectedModelId
+        ));
+
+        if (model.id === selectedModelId) {
+          row.classList.add("is-selected");
+        }
+
+        const values = [
+  model.name,
+  model.provider,
+  model.version,
+  model.type,
+  model.status,
+  getModelAvailability(model),
+  model.deployment
+];
+
+values.forEach((value, index) => {
+  const cell = document.createElement("td");
+  cell.textContent = value;
+
+  if (index === 4 || index === 5) {
+    const badge = document.createElement("span");
+    badge.className = "ui-badge";
+    badge.textContent = value;
+    cell.replaceChildren(badge);
+  }
+
+  row.appendChild(cell);
+});
+
+        elements.tableBody.appendChild(row);
+      });
+    }
+
+    setText(
+      elements.recordCount,
+      `${filteredModels.length} of ${aiModels.length} models`
+    );
+  }
+
+  // -----------------------------------------
+  // 5. UPDATE MODEL DETAILS
+  // -----------------------------------------
+
+  function updateAIDetails() {
+    const model = getSelectedModel();
+
+    if (!model) return;
+
+    setText(elements.detailName, model.name);
+    setText(elements.detailDescription, model.description);
+    setText(elements.detailId, model.id);
+    setText(elements.detailProvider, model.provider);
+    setText(elements.detailVersion, model.version);
+    setText(elements.detailType, model.type);
+    setText(elements.detailDeployment, model.deployment);
+
+    setText(elements.detailAvailability, getModelAvailability(model));
+
+    setText(elements.detailStatus, model.status);
+
+    setText(elements.requests, formatNumber(model.requests));
+    setText(elements.responseTime, model.responseTime + " ms");
+    setText(elements.latency, model.latency + " ms");
+    setText(elements.success, model.success.toFixed(1) + "%");
+    setText(elements.error, model.error.toFixed(1) + "%");
+    setText(elements.utilization, model.utilization + "%");
+
+    elements.utilizationBar.style.width =
+      model.utilization + "%";
+
+    elements.toggleButton.textContent =
+      model.status === "Active"
+        ? "Deactivate Model"
+        : "Activate Model";
+
+    elements.strategy.value = model.strategy;
+    elements.deploymentTarget.value = model.deployment;
+
+    setText(
+      elements.message,
+      `Selected model: ${model.name}`
+    );
+  }
+
+  // -----------------------------------------
+  // 6. SELECT MODEL
+  // -----------------------------------------
+
+  function selectAIModel(modelId) {
+    const model = aiModels.find(
+      (item) => item.id === modelId
+    );
+
+    if (!model) return;
+
+    selectedModelId = modelId;
+
+    renderAIModels();
+    updateAIDetails();
+  }
+
+  elements.tableBody.addEventListener("click", (event) => {
+    const row = event.target.closest("tr[data-model-id]");
+
+    if (!row || !elements.tableBody.contains(row)) return;
+
+    selectAIModel(row.dataset.modelId);
+  });
+
+  elements.tableBody.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    const row = event.target.closest("tr[data-model-id]");
+
+    if (!row || !elements.tableBody.contains(row)) return;
+
+    event.preventDefault();
+    selectAIModel(row.dataset.modelId);
+  });
+
+  // -----------------------------------------
+  // 7. SEARCH AND FILTERS
+  // -----------------------------------------
+
+  elements.search.addEventListener("input", renderAIModels);
+
+  elements.statusFilter.addEventListener(
+    "change",
+    renderAIModels
+  );
+
+  elements.providerFilter.addEventListener(
+    "change",
+    renderAIModels
+  );
+
+  // -----------------------------------------
+  // 8. ACTIVATE / DEACTIVATE MODEL
+  // -----------------------------------------
+
+  elements.toggleButton.addEventListener("click", () => {
+    const model = getSelectedModel();
+
+    if (!model) return;
+
+    model.status =
+      model.status === "Active"
+        ? "Inactive"
+        : "Active";
+
+    if (model.status === "Inactive") {
+      model.utilization = 0;
+    } else if (model.utilization === 0) {
+      model.utilization = 65;
+    }
+
+    updateAIOverview();
+    renderAIModels();
+    updateAIDetails();
+
+    setText(
+      elements.message,
+      `${model.name} is now ${model.status}.`
+    );
+  });
+
+  // -----------------------------------------
+  // 9. SAVE MODEL CONFIGURATION
+  // -----------------------------------------
+
+  elements.saveButton.addEventListener("click", () => {
+    const model = getSelectedModel();
+
+    if (!model) return;
+
+    model.strategy = elements.strategy.value;
+    model.deployment = elements.deploymentTarget.value;
+
+    renderAIModels();
+    updateAIDetails();
+
+    setText(
+      elements.message,
+      `Configuration saved for ${model.name}.`
+    );
+  });
+
+  // -----------------------------------------
+  // 10. INITIALIZE AI INTERFACE
+  // -----------------------------------------
+
+  updateAIOverview();
+  renderAIModels();
+  updateAIDetails();
+
+})();
 

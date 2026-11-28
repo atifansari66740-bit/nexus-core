@@ -609,13 +609,20 @@
 
         <div
           id="analyticsEventsByType"
-          role="img"
-          aria-label="Events distribution by type"
+          role="group"
+          aria-label="Interactive events distribution by type"
         >
           <p class="muted">
             Event type distribution will appear here.
           </p>
         </div>
+              <div
+  class="analytics-distribution__detail"
+  aria-live="polite"
+>
+  <strong>Type details</strong>
+  <span>Select a category to view its data.</span>
+</div>
       </article>
 
       <article class="card">
@@ -627,13 +634,20 @@
 
         <div
           id="analyticsEventsBySource"
-          role="img"
-          aria-label="Events distribution by source"
+          role="group"
+          aria-label="Interactive events distribution by source"
         >
           <p class="muted">
             Event source distribution will appear here.
           </p>
         </div>
+              <div
+  class="analytics-distribution__detail"
+  aria-live="polite"
+>
+  <strong>Source details</strong>
+  <span>Select a source to view its data.</span>
+</div>
       </article>
 
     </div>
@@ -1010,17 +1024,302 @@
           </div>
         </section>
 
-        <section class="page-view" id="page-ai">
-          <div class="eyebrow">MODEL OPERATIONS</div>
-          <h1>AI Intelligence</h1>
-          <div class="card placeholder-panel">
-            <div>
-              <h2>AI Operations Center</h2>
-              <p>Model registry, evaluation results and inference
-                analytics will be added in a later phase.</p>
-            </div>
-          </div>
-        </section>
+        
+<section class="page-view" id="page-ai">
+
+  <div class="eyebrow">MODEL OPERATIONS</div>
+  <h1>AI Intelligence</h1>
+
+  <div class="ai-page-intro">
+    <div>
+      <h2>AI Models Overview</h2>
+      <p>Monitor model availability, performance and deployment activity.</p>
+    </div>
+    <span class="ai-environment-status">
+      <span></span> Model environment
+    </span>
+  </div>
+
+  <!-- AI MODELS OVERVIEW -->
+
+  <section class="ai-overview-grid" aria-label="AI model overview">
+
+    <article class="kpi-card ai-kpi-card">
+      <div class="ai-kpi-label">Total Models</div>
+      <div class="ai-kpi-value" id="aiTotalModels">6</div>
+      <div class="ai-kpi-foot">Registered models</div>
+    </article>
+
+    <article class="kpi-card ai-kpi-card">
+      <div class="ai-kpi-label">Active Models</div>
+      <div class="ai-kpi-value" id="aiActiveModels">4</div>
+      <div class="ai-kpi-foot">Currently active</div>
+    </article>
+
+    <article class="kpi-card ai-kpi-card">
+      <div class="ai-kpi-label">Inactive Models</div>
+      <div class="ai-kpi-value" id="aiInactiveModels">2</div>
+      <div class="ai-kpi-foot">Not serving requests</div>
+    </article>
+
+    <article class="kpi-card ai-kpi-card">
+      <div class="ai-kpi-label">Model Health</div>
+      <div class="ai-kpi-value" id="aiModelHealth">98.6%</div>
+      <div class="ai-kpi-foot">Aggregate health score</div>
+    </article>
+
+  </section>
+
+
+  <!-- MODEL AVAILABILITY OVERVIEW -->
+
+  <section class="ui-panel ai-panel ai-availability-panel">
+
+    <div class="ai-section-heading">
+      <div>
+        <div class="eyebrow">AVAILABILITY MONITORING</div>
+        <h2>Model Availability</h2>
+        <p>Monitor the current availability of registered AI models.</p>
+      </div>
+    </div>
+
+    <div class="ai-availability-grid">
+
+      <div class="ai-availability-item">
+        <span>Available</span>
+        <strong id="aiAvailableModels">0</strong>
+      </div>
+
+      <div class="ai-availability-item">
+        <span>Limited</span>
+        <strong id="aiLimitedModels">0</strong>
+      </div>
+
+      <div class="ai-availability-item">
+        <span>Unavailable</span>
+        <strong id="aiUnavailableModels">0</strong>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- MODEL REGISTRY -->
+
+  <section class="ui-panel ai-panel">
+
+    <div class="ai-section-heading">
+      <div>
+        <div class="eyebrow">MODEL CATALOG</div>
+        <h2>Model Registry</h2>
+        <p>Browse and manage registered AI models.</p>
+      </div>
+      <span class="ui-badge">Model Registry</span>
+    </div>
+
+    <div class="ai-registry-toolbar">
+
+      <input
+        type="search"
+        id="aiModelSearch"
+        placeholder="Search models..."
+        aria-label="Search AI models"
+      >
+
+      <select id="aiModelStatusFilter" aria-label="Filter by model status">
+        <option value="all">All statuses</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+
+      <select id="aiModelProviderFilter" aria-label="Filter by provider">
+        <option value="all">All providers</option>
+        <option value="OpenAI">OpenAI</option>
+        <option value="Anthropic">Anthropic</option>
+        <option value="Google">Google</option>
+        <option value="Northstar AI">Northstar AI</option>
+      </select>
+
+    </div>
+
+    <div class="ai-table-wrapper">
+      <table class="ai-model-table">
+
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Provider</th>
+            <th>Version</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Availability</th>
+            <th>Deployment</th>
+          </tr>
+        </thead>
+
+        <tbody id="aiModelsTableBody"></tbody>
+
+      </table>
+    </div>
+
+    <div class="ai-registry-footer">
+      <span id="aiModelRecordCount">6 models</span>
+      <span>Select a model to inspect its details</span>
+    </div>
+
+  </section>
+
+
+  <!-- MODEL DETAILS AND PERFORMANCE -->
+
+  <div class="ai-workspace-grid">
+
+    <section class="ui-panel ai-panel">
+
+      <div class="ai-section-heading">
+        <div>
+          <div class="eyebrow">MODEL INSPECTION</div>
+          <h2>Model Details</h2>
+        </div>
+        <span class="ui-badge" id="aiDetailStatus">Active</span>
+      </div>
+
+      <div id="aiModelDetails">
+
+        <div class="ai-detail-primary">
+          <h3 id="aiDetailName">Nexus Language Core</h3>
+          <p id="aiDetailDescription">
+            General-purpose language model for platform workloads.
+          </p>
+        </div>
+
+        <div class="ai-detail-list">
+          <div><span>Model ID</span><strong id="aiDetailId">NXC-MOD-001</strong></div>
+          <div><span>Provider</span><strong id="aiDetailProvider">Northstar AI</strong></div>
+          <div><span>Version</span><strong id="aiDetailVersion">2.4.1</strong></div>
+          <div><span>Model Type</span><strong id="aiDetailType">Language</strong></div>
+          <div><span>Deployment</span><strong id="aiDetailDeployment">Production</strong></div>
+          <div><span>Availability</span><strong id="aiDetailAvailability">Available</strong></div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="ui-panel ai-panel">
+
+      <div class="ai-section-heading">
+        <div>
+          <div class="eyebrow">LIVE SIMULATION</div>
+          <h2>Model Performance</h2>
+        </div>
+        <span class="ui-badge">Sample metrics</span>
+      </div>
+
+      <div class="ai-performance-grid">
+
+        <div class="ai-performance-item">
+          <span>Requests</span>
+          <strong id="aiDetailRequests">128,450</strong>
+        </div>
+
+        <div class="ai-performance-item">
+          <span>Avg. Response Time</span>
+          <strong id="aiDetailResponseTime">168 ms</strong>
+        </div>
+
+        <div class="ai-performance-item">
+          <span>Avg. Latency</span>
+          <strong id="aiDetailLatency">142 ms</strong>
+        </div>
+
+        <div class="ai-performance-item">
+          <span>Success Rate</span>
+          <strong id="aiDetailSuccess">99.4%</strong>
+        </div>
+
+        <div class="ai-performance-item">
+          <span>Error Rate</span>
+          <strong id="aiDetailError">0.6%</strong>
+        </div>
+
+      </div>
+
+      <div class="ai-utilization-heading">
+        <span>Resource Utilization</span>
+        <strong id="aiDetailUtilization">72%</strong>
+      </div>
+
+      <div class="ai-utilization-track">
+        <span id="aiDetailUtilizationBar"></span>
+      </div>
+
+    </section>
+
+  </div>
+
+
+  <!-- MODEL MANAGEMENT -->
+
+  <section class="ui-panel ai-panel ai-management-panel">
+
+    <div class="ai-section-heading">
+      <div>
+        <div class="eyebrow">MODEL CONTROL</div>
+        <h2>Model Management</h2>
+        <p>Manage model status and simulated configuration.</p>
+      </div>
+    </div>
+
+    <div class="ai-management-grid">
+
+      <div class="ai-config-field">
+        <label for="aiModelStrategy">Inference Strategy</label>
+        <select id="aiModelStrategy">
+          <option value="balanced">Balanced</option>
+          <option value="low-latency">Low Latency</option>
+          <option value="high-throughput">High Throughput</option>
+        </select>
+      </div>
+
+      <div class="ai-config-field">
+        <label for="aiModelDeploymentTarget">Deployment Target</label>
+        <select id="aiModelDeploymentTarget">
+          <option value="Production">Production</option>
+          <option value="Staging">Staging</option>
+          <option value="Development">Development</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div class="ai-management-actions">
+
+      <button class="ui-button" id="aiToggleModelButton" type="button">
+        Deactivate Model
+      </button>
+
+      <button class="ui-button" id="aiSaveModelConfig" type="button">
+        Save Configuration
+      </button>
+
+      <span id="aiManagementMessage" aria-live="polite">
+        Select a model to manage its configuration.
+      </span>
+
+    </div>
+
+    <p class="ai-simulation-note">
+      Management actions currently update simulated interface data.
+      No external AI provider or production deployment is connected.
+    </p>
+
+  </section>
+
+</section>
+
 
         <section class="page-view" id="page-logs">
           <div class="eyebrow">DEVELOPER OPERATIONS</div>
